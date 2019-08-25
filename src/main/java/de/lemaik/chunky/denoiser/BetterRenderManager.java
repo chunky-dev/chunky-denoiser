@@ -1,12 +1,16 @@
 package de.lemaik.chunky.denoiser;
 
 import de.lemaik.chunky.denoiser.pfm.PortableFloatMap;
+import se.llbit.chunky.PersistentSettings;
 import se.llbit.chunky.renderer.RenderContext;
 import se.llbit.chunky.renderer.RenderManager;
 import se.llbit.chunky.renderer.RenderMode;
 import se.llbit.chunky.renderer.RenderStatusListener;
 import se.llbit.chunky.renderer.scene.PathTracer;
 import se.llbit.chunky.renderer.scene.Scene;
+import se.llbit.chunky.resources.BitmapImage;
+import se.llbit.png.PngFileWriter;
+import se.llbit.util.TaskTracker;
 
 import java.io.*;
 import java.nio.ByteOrder;
@@ -39,6 +43,25 @@ public class BetterRenderManager extends RenderManager {
                         scene.startRender();
                     } else if (rayTracer.getRayTracer() instanceof PathTracer) {
                         writePfmImage(new File(context.getSceneDirectory(), scene.name + ".pfm"));
+
+                        String denoiserPath = PersistentSettings.settings.getString("oidnPath", null);
+                        if (denoiserPath != null) {
+                            File denoisedPfm = new File(context.getSceneDirectory(), scene.name + ".denoised.pfm");
+                            try {
+                                OidnBinaryDenoiser.denoise(denoiserPath,
+                                        new File(context.getSceneDirectory(), scene.name + ".pfm"),
+                                        new File(context.getSceneDirectory(), scene.name + ".albedo.pfm"),
+                                        new File(context.getSceneDirectory(), scene.name + ".normal.pfm"),
+                                        denoisedPfm
+                                );
+                                BitmapImage img = PortableFloatMap.readToRgbImage(new FileInputStream(denoisedPfm));
+                                try (PngFileWriter pngWriter = new PngFileWriter(new File(context.getSceneDirectory(), scene.name + "-" + oldTargetSpp + ".denoised.png"))) {
+                                    pngWriter.write(img.data, img.width, img.height, TaskTracker.Task.NONE);
+                                }
+                            } catch (IOException | InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                        }
                     }
                 } else if (isFirst) {
                     isFirst = false;
