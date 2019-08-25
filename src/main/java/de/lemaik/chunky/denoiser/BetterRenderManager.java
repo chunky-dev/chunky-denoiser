@@ -12,6 +12,10 @@ import java.io.*;
 import java.nio.ByteOrder;
 
 public class BetterRenderManager extends RenderManager {
+    private static final int ALBEDO_SPP = 100;
+    private static final int NORMAL_SPP = 100;
+    private boolean isFirst = true;
+
     public BetterRenderManager(RenderContext context, boolean headless, CombinedRayTracer rayTracer) {
         super(context, headless);
         this.addRenderListener(new RenderStatusListener() {
@@ -19,27 +23,30 @@ public class BetterRenderManager extends RenderManager {
 
             @Override
             public void setSpp(int spp) {
-                if (spp >= getBufferedScene().getTargetSpp()) {
+                if (!isFirst && spp >= getBufferedScene().getTargetSpp()) {
                     Scene scene = context.getChunky().getSceneManager().getScene();
-                    if (rayTracer.getRayTracer() instanceof PathTracer) {
-                        oldTargetSpp = scene.getTargetSpp();
-                        writePfmImage(new File(context.getSceneDirectory(), scene.name + ".pfm"), true);
-                        rayTracer.setRayTracer(new NormalTracer());
-                        scene.haltRender();
-                        scene.setTargetSpp(1);
-                        scene.startRender();
-                    } else if (rayTracer.getRayTracer() instanceof NormalTracer) {
-                        writePfmImage(new File(context.getSceneDirectory(), scene.name + ".normal.pfm"), false);
+                    if (rayTracer.getRayTracer() instanceof NormalTracer) {
+                        writeNormalPfmImage(new File(context.getSceneDirectory(), scene.name + ".normal.pfm"));
                         rayTracer.setRayTracer(new AlbedoTracer());
                         scene.haltRender();
-                        scene.setTargetSpp(1);
+                        scene.setTargetSpp(ALBEDO_SPP);
                         scene.startRender();
                     } else if (rayTracer.getRayTracer() instanceof AlbedoTracer) {
-                        writePfmImage(new File(context.getSceneDirectory(), scene.name + ".albedo.pfm"), true);
+                        writePfmImage(new File(context.getSceneDirectory(), scene.name + ".albedo.pfm"));
                         rayTracer.setRayTracer(new PathTracer());
-                        scene.setTargetSpp(oldTargetSpp);
                         scene.haltRender();
+                        scene.setTargetSpp(oldTargetSpp);
+                        scene.startRender();
+                    } else if (rayTracer.getRayTracer() instanceof PathTracer) {
+                        writePfmImage(new File(context.getSceneDirectory(), scene.name + ".pfm"));
                     }
+                } else if (isFirst) {
+                    isFirst = false;
+                    rayTracer.setRayTracer(new NormalTracer());
+                    Scene scene = context.getChunky().getSceneManager().getScene();
+                    scene.haltRender();
+                    scene.setTargetSpp(NORMAL_SPP);
+                    scene.startRender();
                 }
             }
 
@@ -53,28 +60,43 @@ public class BetterRenderManager extends RenderManager {
 
             @Override
             public void renderStateChanged(RenderMode renderMode) {
+                if (renderMode == RenderMode.RENDERING) {
+                    isFirst = true;
+                    oldTargetSpp = context.getChunky().getSceneManager().getScene().getTargetSpp();
+                }
             }
         });
     }
 
-    private void writePfmImage(File file, boolean applyToneMap) {
+    private void writePfmImage(File file) {
         Scene scene = getBufferedScene();
         double[] samples = scene.getSampleBuffer();
         double[] pixels = new double[samples.length];
 
-        if (applyToneMap) {
-            for (int y = 0; y < scene.height; y++) {
-                for (int x = 0; x < scene.width; x++) {
-                    double[] result = new double[3];
-                    scene.postProcessPixel(x, y, result);
-                    pixels[(y * scene.width + x) * 3] = Math.min(1.0, result[0]);
-                    pixels[(y * scene.width + x) * 3 + 1] = Math.min(1.0, result[1]);
-                    pixels[(y * scene.width + x) * 3 + 2] = Math.min(1.0, result[2]);
-                }
+        for (int y = 0; y < scene.height; y++) {
+            for (int x = 0; x < scene.width; x++) {
+                double[] result = new double[3];
+                scene.postProcessPixel(x, y, result);
+                pixels[(y * scene.width + x) * 3] = Math.min(1.0, result[0]);
+                pixels[(y * scene.width + x) * 3 + 1] = Math.min(1.0, result[1]);
+                pixels[(y * scene.width + x) * 3 + 2] = Math.min(1.0, result[2]);
             }
-        } else {
+        }
+
+        try (OutputStream out = new BufferedOutputStream(new FileOutputStream(file))) {
+            PortableFloatMap.writeImage(pixels, scene.width, scene.height, ByteOrder.LITTLE_ENDIAN, out);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void writeNormalPfmImage(File file) {
+        Scene scene = getBufferedScene();
+        double[] samples = scene.getSampleBuffer();
+        double[] pixels = NormalTracer.MAP_POSITIVE ? new double[samples.length] : samples;
+        if (NormalTracer.MAP_POSITIVE) {
             for (int i = 0; i < samples.length; i++) {
-                pixels[i] = Math.min(1.0, samples[i]);
+                pixels[i] = Math.min(1.0, samples[i]) * 2 - 1;
             }
         }
 
