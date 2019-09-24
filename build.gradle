@@ -1,5 +1,24 @@
 apply plugin: 'java'
 
+task generateSources(type: Copy) {
+    from 'src/main/java'
+    into "$buildDir/generated-src"
+    filter { line ->
+		if (project.hasProperty("chunky2")) {
+			return line
+				.replaceAll("/\\* chunky-2", '')
+				.replaceAll('chunky-2 \\*/', '')
+		} else {
+			return line
+				.replaceAll("/\\* chunky-1", '')
+				.replaceAll('chunky-1 \\*/', '')
+		}
+	}
+}
+
+sourceSets.main.java.srcDirs = ["$buildDir/generated-src"]
+compileJava.dependsOn generateSources
+
 repositories {
 	mavenLocal()
 	mavenCentral()
@@ -12,7 +31,11 @@ sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
 
 dependencies {
-	compile 'se.llbit:chunky-core:2.0-beta6'
+	if (project.hasProperty("chunky2")) {
+		compile 'se.llbit:chunky-core:2.0-beta6'
+	} else {
+		compile 'se.llbit:chunky-core:1.4.5'
+	}
 	compile 'org.apache.commons:commons-math3:3.2'
 }
 
