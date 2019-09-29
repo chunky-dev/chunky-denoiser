@@ -1,5 +1,6 @@
 package de.lemaik.chunky.denoiser;
 
+import se.llbit.chunky.model.WaterModel;
 import se.llbit.chunky.renderer.WorkerState;
 import se.llbit.chunky.renderer.scene.PreviewRayTracer;
 import se.llbit.chunky.renderer.scene.RayTracer;
@@ -17,6 +18,10 @@ public class NormalTracer implements RayTracer {
     public void trace(Scene scene, WorkerState state) {
         Ray ray = state.ray;
         if (PreviewRayTracer.nextIntersection(scene, ray)) {
+            // TODO make water displacement on the normal map configurable
+            if (ray.getCurrentMaterial().isWater()) {
+                WaterModel.doWaterDisplacement(ray);
+            }
             if (MAP_POSITIVE) {
                 Vector3 normal = new Vector3(ray.n);
                 normal.normalize();
