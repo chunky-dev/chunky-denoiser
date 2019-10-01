@@ -16,8 +16,8 @@ import java.io.*;
 import java.nio.ByteOrder;
 
 public class BetterRenderManager extends RenderManager {
-    private static final int ALBEDO_SPP = 100;
-    private static final int NORMAL_SPP = 100;
+    public static int ALBEDO_SPP = 100;
+    public static int NORMAL_SPP = 100;
     private boolean isFirst = true;
 
     public BetterRenderManager(RenderContext context, boolean headless, CombinedRayTracer rayTracer) {

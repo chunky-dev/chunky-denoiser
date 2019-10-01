@@ -1,22 +1,18 @@
 apply plugin: 'java'
 
-task generateSources(type: Copy) {
-    from 'src/main/java'
-    into "$buildDir/generated-src"
-    filter { line ->
-		if (project.hasProperty("chunky2")) {
-			return line
-				.replaceAll("/\\* chunky-2", '')
-				.replaceAll('chunky-2 \\*/', '')
-		} else {
-			return line
-				.replaceAll("/\\* chunky-1", '')
-				.replaceAll('chunky-1 \\*/', '')
-		}
+if (project.hasProperty("chunky2")) {
+	task generateSources(type: Copy) {
+		from 'src/chunky-2/java'
+		into "$buildDir/generated-src"
+	}
+} else {
+	task generateSources(type: Copy) {
+		from 'src/chunky-1/java'
+		into "$buildDir/generated-src"
 	}
 }
 
-sourceSets.main.java.srcDirs = ["$buildDir/generated-src"]
+sourceSets.main.java.srcDirs = ["$buildDir/generated-src", "src/main/java"]
 compileJava.dependsOn generateSources
 
 repositories {
