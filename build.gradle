@@ -1,19 +1,40 @@
 apply plugin: 'java'
+jar.enabled = false
 
-if (project.hasProperty("chunky2")) {
-	task generateSources(type: Copy) {
-		from 'src/chunky-2/java'
-		into "$buildDir/generated-src"
+compileJava {
+	sourceCompatibility = JavaVersion.VERSION_1_8
+	targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+sourceSets {
+	chunky1 {
+		java.srcDir 'src/main/java'
+		java.srcDir 'src/chunky-1/java'
+		resources.srcDir 'src/main/resources'
+		resources.srcDir 'src/chunky-1/resources'
 	}
-} else {
-	task generateSources(type: Copy) {
-		from 'src/chunky-1/java'
-		into "$buildDir/generated-src"
+	chunky2 {
+		java.srcDir 'src/main/java'
+		java.srcDir 'src/chunky-2/java'
+		resources.srcDir 'src/main/resources'
+		resources.srcDir 'src/chunky-2/resources'
 	}
 }
 
-sourceSets.main.java.srcDirs = ["$buildDir/generated-src", "src/main/java"]
-compileJava.dependsOn generateSources
+task chunky1Jar(type: Jar) {
+	from sourceSets.chunky1.output
+	classifier = 'chunky1'
+}
+
+task chunky2Jar(type: Jar) {
+	from sourceSets.chunky2.output
+	classifier = 'chunky2'
+}
+
+dependencies {
+	chunky1Compile 'se.llbit:chunky-core:1.4.5'
+	chunky2Compile 'se.llbit:chunky-core:2.0-beta6'
+}
 
 repositories {
 	mavenLocal()
@@ -23,16 +44,4 @@ repositories {
 	}
 }
 
-sourceCompatibility = '1.8'
-targetCompatibility = '1.8'
-
-dependencies {
-	if (project.hasProperty("chunky2")) {
-		compile 'se.llbit:chunky-core:2.0-beta6'
-	} else {
-		compile 'se.llbit:chunky-core:1.4.5'
-	}
-	compile 'org.apache.commons:commons-math3:3.2'
-}
-
-defaultTasks 'jar'
+defaultTasks 'chunky1Jar', 'chunky2Jar'
