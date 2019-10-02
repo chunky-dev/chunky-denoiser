@@ -7,7 +7,7 @@ import se.llbit.chunky.ui.render.RenderControlsTab;
 
 import java.io.IOException;
 
-public class DenoiserTab implements RenderControlsTab {
+public class DenoiserTabImpl implements RenderControlsTab {
     @Override
     public void update(Scene scene) {
 
@@ -19,7 +19,7 @@ public class DenoiserTab implements RenderControlsTab {
 
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/denoiser-tab.fxml"));
-            fxmlLoader.setController(this);
+            fxmlLoader.setController(new DenoiserTab());
             tab.setContent(fxmlLoader.load());
             return tab;
         } catch (IOException e) {

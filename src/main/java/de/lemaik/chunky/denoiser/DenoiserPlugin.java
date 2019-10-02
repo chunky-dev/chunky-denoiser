@@ -5,7 +5,6 @@ import se.llbit.chunky.main.Chunky;
 import se.llbit.chunky.main.ChunkyOptions;
 import se.llbit.chunky.renderer.RendererFactory;
 import se.llbit.chunky.ui.ChunkyFx;
-import se.llbit.chunky.ui.render.RenderControlsTab;
 import se.llbit.chunky.ui.render.RenderControlsTabTransformer;
 
 import java.lang.reflect.Field;
@@ -31,7 +30,7 @@ public class DenoiserPlugin implements Plugin {
 
         RenderControlsTabTransformer prev = chunky.getRenderControlsTabTransformer();
         chunky.setRenderControlsTabTransformer(tabs -> {
-            tabs.add(new DenoiserTab());
+            tabs.add(DenoiserTab.getImplementation());
             return tabs;
         });
     }

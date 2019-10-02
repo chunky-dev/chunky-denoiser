@@ -18,6 +18,7 @@ import java.nio.ByteOrder;
 public class BetterRenderManager extends RenderManager {
     public static int ALBEDO_SPP = 100;
     public static int NORMAL_SPP = 100;
+    public static boolean NORMAL_WATER_DISPLACEMENT = true;
     private boolean isFirst = true;
 
     public BetterRenderManager(RenderContext context, boolean headless, CombinedRayTracer rayTracer) {

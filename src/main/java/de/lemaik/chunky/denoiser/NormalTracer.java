@@ -12,16 +12,16 @@ public class NormalTracer implements RayTracer {
     /**
      * If true, all values are mapped to positive values so that they can be displayed on the rendered image.
      */
-    public static final boolean MAP_POSITIVE = false;
+    static final boolean MAP_POSITIVE = false;
 
     @Override
     public void trace(Scene scene, WorkerState state) {
         Ray ray = state.ray;
         if (PreviewRayTracer.nextIntersection(scene, ray)) {
-            // TODO make water displacement on the normal map configurable
-            if (ray.getCurrentMaterial().isWater()) {
+            if (BetterRenderManager.NORMAL_WATER_DISPLACEMENT && !scene.stillWaterEnabled() && ray.getCurrentMaterial().isWater()) {
                 WaterModel.doWaterDisplacement(ray);
             }
+
             if (MAP_POSITIVE) {
                 Vector3 normal = new Vector3(ray.n);
                 normal.normalize();

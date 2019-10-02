@@ -2,3 +2,5 @@
 /.gradle/
 /.idea/
 /*.iml
+/out/
+/bin/

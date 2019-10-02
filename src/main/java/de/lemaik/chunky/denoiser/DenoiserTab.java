@@ -1,26 +1,19 @@
 package de.lemaik.chunky.denoiser;
 
 import javafx.fxml.FXML;
-import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
 import se.llbit.chunky.PersistentSettings;
-import se.llbit.chunky.renderer.scene.Scene;
-import se.llbit.chunky.ui.RenderControlsFxController;
 import se.llbit.chunky.ui.render.RenderControlsTab;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URL;
 import java.util.ResourceBundle;
 
-public class DenoiserTab implements RenderControlsTab, Initializable {
-    private Scene scene;
-
+public class DenoiserTab implements Initializable {
     @FXML
     private CheckBox albedoMap;
     @FXML
@@ -30,35 +23,11 @@ public class DenoiserTab implements RenderControlsTab, Initializable {
     @FXML
     private TextField normalSpp;
     @FXML
+    private CheckBox normalWaterDisplacement;
+    @FXML
     private TextField denoiserPath;
     @FXML
     private Button selectPath;
-
-    @Override
-    public void update(Scene scene) {
-
-    }
-
-    @Override
-    public void setController(RenderControlsFxController controller) {
-        scene = controller.getRenderController().getSceneManager().getScene();
-    }
-
-    @Override
-    public String getTabTitle() {
-        return "Denoiser";
-    }
-
-    @Override
-    public Node getTabContent() {
-        try {
-            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/denoiser-tab.fxml"));
-            fxmlLoader.setController(this);
-            return fxmlLoader.load();
-        } catch (IOException e) {
-            throw new RuntimeException("Could not initialize denoiser plugin", e);
-        }
-    }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -99,6 +68,9 @@ public class DenoiserTab implements RenderControlsTab, Initializable {
                 normalSpp.setText(BetterRenderManager.NORMAL_SPP + "");
             }
         }));
+        normalWaterDisplacement.selectedProperty().addListener(((observable, oldValue, newValue) -> {
+            BetterRenderManager.NORMAL_WATER_DISPLACEMENT = newValue;
+        }));
 
         denoiserPath.setText(PersistentSettings.settings.getString("oidnPath", ""));
         selectPath.setOnAction(e -> {
@@ -116,5 +88,9 @@ public class DenoiserTab implements RenderControlsTab, Initializable {
                 denoiserPath.setText(denoiser.getAbsolutePath());
             }
         });
+    }
+
+    public static RenderControlsTab getImplementation() {
+        return new DenoiserTabImpl();
     }
 }
