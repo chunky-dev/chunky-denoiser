@@ -32,6 +32,7 @@ public class DenoiserTab implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         albedoMap.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            BetterRenderManager.ENABLE_ALBEDO = newValue;
             if (newValue == false) {
                 // albedo map disabled, disable normal map
                 normalMap.setSelected(false);
@@ -51,6 +52,7 @@ public class DenoiserTab implements Initializable {
         }));
 
         normalMap.selectedProperty().addListener((observable, oldValue, newValue) -> {
+            BetterRenderManager.ENABLE_NORMAL = newValue;
             if (newValue == true) {
                 // normal map enabled, enable albedo map
                 albedoMap.setSelected(true);

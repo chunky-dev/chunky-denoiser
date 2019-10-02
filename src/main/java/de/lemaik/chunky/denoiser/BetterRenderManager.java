@@ -18,11 +18,18 @@ import java.nio.ByteOrder;
 public class BetterRenderManager extends RenderManager {
     public static int ALBEDO_SPP = 100;
     public static int NORMAL_SPP = 100;
+    public static boolean ENABLE_ALBEDO = true;
+    public static boolean ENABLE_NORMAL = true;
     public static boolean NORMAL_WATER_DISPLACEMENT = true;
+
+    private final RenderContext context;
+    private final CombinedRayTracer rayTracer;
     private boolean isFirst = true;
 
     public BetterRenderManager(RenderContext context, boolean headless, CombinedRayTracer rayTracer) {
         super(context, headless);
+        this.context = context;
+        this.rayTracer = rayTracer;
         this.addRenderListener(new RenderStatusListener() {
             int oldTargetSpp = 0;
 
@@ -32,16 +39,14 @@ public class BetterRenderManager extends RenderManager {
                     Scene scene = context.getChunky().getSceneManager().getScene();
                     if (rayTracer.getRayTracer() instanceof NormalTracer) {
                         writeNormalPfmImage(new File(context.getSceneDirectory(), scene.name + ".normal.pfm"));
-                        rayTracer.setRayTracer(new AlbedoTracer());
-                        scene.haltRender();
-                        scene.setTargetSpp(ALBEDO_SPP);
-                        scene.startRender();
+                        if (ENABLE_ALBEDO) {
+                            renderAlbedoMap();
+                        } else {
+                            renderImage(oldTargetSpp);
+                        }
                     } else if (rayTracer.getRayTracer() instanceof AlbedoTracer) {
                         writePfmImage(new File(context.getSceneDirectory(), scene.name + ".albedo.pfm"));
-                        rayTracer.setRayTracer(new PathTracer());
-                        scene.haltRender();
-                        scene.setTargetSpp(oldTargetSpp);
-                        scene.startRender();
+                        renderImage(oldTargetSpp);
                     } else if (rayTracer.getRayTracer() instanceof PathTracer) {
                         writePfmImage(new File(context.getSceneDirectory(), scene.name + ".pfm"));
 
@@ -51,8 +56,8 @@ public class BetterRenderManager extends RenderManager {
                             try {
                                 OidnBinaryDenoiser.denoise(denoiserPath,
                                         new File(context.getSceneDirectory(), scene.name + ".pfm"),
-                                        new File(context.getSceneDirectory(), scene.name + ".albedo.pfm"),
-                                        new File(context.getSceneDirectory(), scene.name + ".normal.pfm"),
+                                        ENABLE_ALBEDO ? new File(context.getSceneDirectory(), scene.name + ".albedo.pfm") : null,
+                                        ENABLE_NORMAL ? new File(context.getSceneDirectory(), scene.name + ".normal.pfm") : null,
                                         denoisedPfm
                                 );
                                 BitmapImage img = PortableFloatMap.readToRgbImage(new FileInputStream(denoisedPfm));
@@ -66,11 +71,14 @@ public class BetterRenderManager extends RenderManager {
                     }
                 } else if (isFirst) {
                     isFirst = false;
-                    rayTracer.setRayTracer(new NormalTracer());
-                    Scene scene = context.getChunky().getSceneManager().getScene();
-                    scene.haltRender();
-                    scene.setTargetSpp(NORMAL_SPP);
-                    scene.startRender();
+                    oldTargetSpp = getBufferedScene().getTargetSpp();
+                    if (ENABLE_NORMAL) {
+                        renderNormalMap();
+                    } else if (ENABLE_ALBEDO) {
+                        renderAlbedoMap();
+                    } else {
+                        renderImage(oldTargetSpp);
+                    }
                 }
             }
 
@@ -90,6 +98,31 @@ public class BetterRenderManager extends RenderManager {
                 }
             }
         });
+    }
+
+    private void renderAlbedoMap() {
+        rayTracer.setRayTracer(new AlbedoTracer());
+        Scene scene = this.context.getChunky().getSceneManager().getScene();
+        scene.haltRender();
+        scene.setTargetSpp(ALBEDO_SPP);
+        scene.startRender();
+    }
+
+    private void renderNormalMap() {
+        rayTracer.setRayTracer(new NormalTracer());
+        Scene scene = context.getChunky().getSceneManager().getScene();
+        scene.haltRender();
+        scene.setTargetSpp(NORMAL_SPP);
+        scene.startRender();
+
+    }
+
+    private void renderImage(int spp) {
+        rayTracer.setRayTracer(new PathTracer());
+        Scene scene = this.context.getChunky().getSceneManager().getScene();
+        scene.haltRender();
+        scene.setTargetSpp(spp);
+        scene.startRender();
     }
 
     private void writePfmImage(File file) {
