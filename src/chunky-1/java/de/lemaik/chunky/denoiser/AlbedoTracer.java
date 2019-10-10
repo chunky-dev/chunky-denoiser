@@ -19,6 +19,16 @@ public class AlbedoTracer implements RayTracer {
 
         while (true) {
             if (!PreviewRayTracer.nextIntersection(scene, ray)) {
+                if (ray.getPrevMaterial().isWater()) {
+                    // set water color to white
+                    ray.color.set(1, 1, 1, 1);
+                } else if (ray.depth == 0) {
+                    // direct sky hit
+                    if (!scene.transparentSky()) {
+                        scene.sky().getSkyColorInterpolated(ray);
+                    }
+                }
+                // ignore indirect sky hits
                 break;
             }
 
