@@ -25,6 +25,7 @@ public class BetterRenderManager extends RenderManager {
     private final RenderContext context;
     private final CombinedRayTracer rayTracer;
     private boolean isFirst = true;
+    private RenderMode mode = RenderMode.PREVIEW;
 
     public BetterRenderManager(RenderContext context, boolean headless, CombinedRayTracer rayTracer) {
         super(context, headless);
@@ -35,6 +36,10 @@ public class BetterRenderManager extends RenderManager {
 
             @Override
             public void setSpp(int spp) {
+                if (mode == RenderMode.PREVIEW) {
+                    return;
+                }
+
                 if (!isFirst && spp >= getBufferedScene().getTargetSpp()) {
                     Scene scene = context.getChunky().getSceneManager().getScene();
                     if (rayTracer.getRayTracer() instanceof NormalTracer) {
@@ -92,6 +97,8 @@ public class BetterRenderManager extends RenderManager {
 
             @Override
             public void renderStateChanged(RenderMode renderMode) {
+                BetterRenderManager.this.mode = renderMode;
+
                 if (renderMode == RenderMode.RENDERING) {
                     isFirst = true;
                     oldTargetSpp = context.getChunky().getSceneManager().getScene().getTargetSpp();
