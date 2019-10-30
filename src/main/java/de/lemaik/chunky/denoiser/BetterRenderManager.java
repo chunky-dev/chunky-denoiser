@@ -66,7 +66,7 @@ public class BetterRenderManager extends RenderManager {
                                         denoisedPfm
                                 );
                                 BitmapImage img = PortableFloatMap.readToRgbImage(new FileInputStream(denoisedPfm));
-                                try (PngFileWriter pngWriter = new PngFileWriter(new File(context.getSceneDirectory(), scene.name + "-" + oldTargetSpp + ".denoised.png"))) {
+                                try (PngFileWriter pngWriter = new PngFileWriter(new File(context.getSceneDirectory(), scene.name + "-" + spp + ".denoised.png"))) {
                                     pngWriter.write(img.data, img.width, img.height, TaskTracker.Task.NONE);
                                 }
                             } catch (IOException | InterruptedException e) {
