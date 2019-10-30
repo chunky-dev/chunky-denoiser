@@ -97,9 +97,10 @@ public class BetterRenderManager extends RenderManager {
 
             @Override
             public void renderStateChanged(RenderMode renderMode) {
+                RenderMode oldMode = BetterRenderManager.this.mode;
                 BetterRenderManager.this.mode = renderMode;
 
-                if (renderMode == RenderMode.RENDERING) {
+                if (renderMode == RenderMode.RENDERING && oldMode != RenderMode.PAUSED) {
                     isFirst = true;
                     oldTargetSpp = context.getChunky().getSceneManager().getScene().getTargetSpp();
                 }
