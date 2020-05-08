@@ -2,7 +2,7 @@
 
 This is a plugin for [Chunky][chunky] that creates _Portable Float Map_ files (.pfm) for use with denoisers, e.g. [Intel Open Image Denoise][openimagedenoise]. The plugin was compiled for and tested with Chunky 1.4.5 as well as Chunky 2.0-beta6.
 
-Please use chunky-denoiser-chunky1.jar for Chunky 1.X and **chunky-denoiser-chunky2.jar** for **Chunky 2.0beta** & Chunky builds obtained from http://chunkyupdate.lemaik.de/ which are labelled as **1.4.5-xxx-...** in the launcher.
+Please use `chunky-denoiser-chunky1.jar` for Chunky 1.x and `chunky-denoiser-chunky2.jar` for Chunky 2.x (i.e. all Chunky versions for Minecraft 1.13 or later).
 
 ## Installation
 Download the latest plugin release for your Chunky version from the [releases page](https://github.com/leMaik/chunky-denoiser/releases). In the Chunky Launcher, click on _Manage plugins_ and then on _Add_ and select the `.jar` file you just downloaded. Click on `Save` to store the updated configuration, then start Chunky as usual.
@@ -24,7 +24,7 @@ To view the resulting image, it needs to be converted back to an actual image fi
 
 ## License
 
-Copyright 2019 Maik Marschner (leMaik)
+Copyright 2019-2020 Maik Marschner (leMaik)
 
 Permission to modify and redistribute is granted under the terms of the GNU General Public License, Version 3. See the `LICENSE` file for the full license.
 
