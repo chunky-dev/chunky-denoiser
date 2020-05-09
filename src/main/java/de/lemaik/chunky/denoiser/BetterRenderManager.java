@@ -16,8 +16,8 @@ import java.io.*;
 import java.nio.ByteOrder;
 
 public class BetterRenderManager extends RenderManager {
-    public static int ALBEDO_SPP = 100;
-    public static int NORMAL_SPP = 100;
+    public static int ALBEDO_SPP = 16;
+    public static int NORMAL_SPP = 16;
     public static boolean ENABLE_ALBEDO = true;
     public static boolean ENABLE_NORMAL = true;
     public static boolean NORMAL_WATER_DISPLACEMENT = true;
