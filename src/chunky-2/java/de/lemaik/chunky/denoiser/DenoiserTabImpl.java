@@ -1,22 +1,16 @@
 package de.lemaik.chunky.denoiser;
 
-import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.TextField;
-import javafx.stage.FileChooser;
-import se.llbit.chunky.PersistentSettings;
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
 import se.llbit.chunky.renderer.scene.Scene;
+import se.llbit.chunky.ui.ChunkyFxController;
 import se.llbit.chunky.ui.RenderControlsFxController;
 import se.llbit.chunky.ui.render.RenderControlsTab;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.URL;
-import java.util.ResourceBundle;
+import java.lang.reflect.Field;
 
 public class DenoiserTabImpl implements RenderControlsTab {
     @Override
@@ -25,6 +19,19 @@ public class DenoiserTabImpl implements RenderControlsTab {
 
     @Override
     public void setController(RenderControlsFxController controller) {
+        PreviewTab previewTab = new PreviewTab();
+        try {
+            ChunkyFxController cfx = controller.getChunkyController();
+            Field f = cfx.getClass().getDeclaredField("mainTabs");
+            f.setAccessible(true);
+            TabPane mainTabs = (TabPane) f.get(cfx);
+            Tab tab = new Tab();
+            tab.setContent(previewTab.getTabContent());
+            tab.setText(previewTab.getTabTitle());
+            mainTabs.getTabs().add(tab);
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override

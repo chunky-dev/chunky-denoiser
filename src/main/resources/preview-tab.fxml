@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?import javafx.scene.canvas.Canvas?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.layout.StackPane?>
+<Tab text="Denoised Preview" xmlns="http://javafx.com/javafx/8.0.201"
+  xmlns:fx="http://javafx.com/fxml/1">
+  <ScrollPane fitToHeight="true" fitToWidth="true">
+    <StackPane>
+      <Canvas fx:id="denoiserPreview"/>
+    </StackPane>
+  </ScrollPane>
+</Tab>
