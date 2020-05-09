@@ -50,10 +50,10 @@ public class BetterRenderManager extends RenderManager {
                             renderImage(oldTargetSpp);
                         }
                     } else if (rayTracer.getRayTracer() instanceof AlbedoTracer) {
-                        writePfmImage(new File(context.getSceneDirectory(), scene.name + ".albedo.pfm"));
+                        writePfmImage(new File(context.getSceneDirectory(), scene.name + ".albedo.pfm"), false);
                         renderImage(oldTargetSpp);
                     } else if (rayTracer.getRayTracer() instanceof PathTracer) {
-                        writePfmImage(new File(context.getSceneDirectory(), scene.name + ".pfm"));
+                        writePfmImage(new File(context.getSceneDirectory(), scene.name + ".pfm"), true);
 
                         String denoiserPath = PersistentSettings.settings.getString("oidnPath", null);
                         if (denoiserPath != null) {
@@ -133,7 +133,7 @@ public class BetterRenderManager extends RenderManager {
         scene.startRender();
     }
 
-    private void writePfmImage(File file) {
+    private void writePfmImage(File file, boolean postProcess) {
         Scene scene = getBufferedScene();
         double[] samples = scene.getSampleBuffer();
         double[] pixels = new double[samples.length];
@@ -141,7 +141,13 @@ public class BetterRenderManager extends RenderManager {
         for (int y = 0; y < scene.height; y++) {
             for (int x = 0; x < scene.width; x++) {
                 double[] result = new double[3];
-                scene.postProcessPixel(x, y, result);
+                if (postProcess) {
+                    scene.postProcessPixel(x, y, result);
+                } else {
+                    result[0] = samples[(y * scene.width + x) * 3 + 0];
+                    result[1] = samples[(y * scene.width + x) * 3 + 1];
+                    result[2] = samples[(y * scene.width + x) * 3 + 2];
+                }
                 pixels[(y * scene.width + x) * 3] = Math.min(1.0, result[0]);
                 pixels[(y * scene.width + x) * 3 + 1] = Math.min(1.0, result[1]);
                 pixels[(y * scene.width + x) * 3 + 2] = Math.min(1.0, result[2]);
