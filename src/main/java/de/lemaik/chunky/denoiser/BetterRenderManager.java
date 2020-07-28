@@ -9,6 +9,7 @@ import se.llbit.chunky.renderer.RenderStatusListener;
 import se.llbit.chunky.renderer.scene.PathTracer;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.chunky.resources.BitmapImage;
+import se.llbit.log.Log;
 import se.llbit.png.PngFileWriter;
 import se.llbit.util.TaskTracker;
 
@@ -43,17 +44,29 @@ public class BetterRenderManager extends RenderManager {
                 if (!isFirst && spp >= getBufferedScene().getTargetSpp()) {
                     Scene scene = context.getChunky().getSceneManager().getScene();
                     if (rayTracer.getRayTracer() instanceof NormalTracer) {
-                        writeNormalPfmImage(new File(context.getSceneDirectory(), scene.name + ".normal.pfm"));
+                        try (OutputStream out = new BufferedOutputStream(context.getSceneFileOutputStream(scene.name + ".normal.pfm"))) {
+                            writeNormalPfmImage(out);
+                        } catch (IOException e) {
+                            Log.error("Saving the normal PFM failed", e);
+                        }
                         if (ENABLE_ALBEDO) {
                             renderAlbedoMap();
                         } else {
                             renderImage(oldTargetSpp);
                         }
                     } else if (rayTracer.getRayTracer() instanceof AlbedoTracer) {
-                        writePfmImage(new File(context.getSceneDirectory(), scene.name + ".albedo.pfm"), false);
+                        try (OutputStream out = new BufferedOutputStream(context.getSceneFileOutputStream(scene.name + ".albedo.pfm"))) {
+                            writePfmImage(out, false);
+                        } catch (IOException e) {
+                            Log.error("Saving the albedo PFM failed", e);
+                        }
                         renderImage(oldTargetSpp);
                     } else if (rayTracer.getRayTracer() instanceof PathTracer) {
-                        writePfmImage(new File(context.getSceneDirectory(), scene.name + ".pfm"), true);
+                        try (OutputStream out = new BufferedOutputStream(context.getSceneFileOutputStream(scene.name + ".pfm"))) {
+                          writePfmImage(out, true);
+                        } catch (IOException e) {
+                          Log.error("Saving the albedo PFM failed", e);
+                        }
 
                         String denoiserPath = PersistentSettings.settings.getString("oidnPath", null);
                         if (denoiserPath != null) {
@@ -133,7 +146,7 @@ public class BetterRenderManager extends RenderManager {
         scene.startRender();
     }
 
-    private void writePfmImage(File file, boolean postProcess) {
+    private void writePfmImage(OutputStream out, boolean postProcess) throws IOException {
         Scene scene = getBufferedScene();
         double[] samples = scene.getSampleBuffer();
         double[] pixels = new double[samples.length];
@@ -154,14 +167,10 @@ public class BetterRenderManager extends RenderManager {
             }
         }
 
-        try (OutputStream out = new BufferedOutputStream(new FileOutputStream(file))) {
-            PortableFloatMap.writeImage(pixels, scene.width, scene.height, ByteOrder.LITTLE_ENDIAN, out);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        PortableFloatMap.writeImage(pixels, scene.width, scene.height, ByteOrder.LITTLE_ENDIAN, out);
     }
 
-    private void writeNormalPfmImage(File file) {
+    private void writeNormalPfmImage(OutputStream out) throws IOException {
         Scene scene = getBufferedScene();
         double[] samples = scene.getSampleBuffer();
         double[] pixels = NormalTracer.MAP_POSITIVE ? new double[samples.length] : samples;
@@ -171,10 +180,6 @@ public class BetterRenderManager extends RenderManager {
             }
         }
 
-        try (OutputStream out = new BufferedOutputStream(new FileOutputStream(file))) {
-            PortableFloatMap.writeImage(pixels, scene.width, scene.height, ByteOrder.LITTLE_ENDIAN, out);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        PortableFloatMap.writeImage(pixels, scene.width, scene.height, ByteOrder.LITTLE_ENDIAN, out);
     }
 }
