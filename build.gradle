@@ -2,46 +2,44 @@ apply plugin: 'java'
 jar.enabled = false
 
 compileJava {
-	sourceCompatibility = JavaVersion.VERSION_1_8
-	targetCompatibility = JavaVersion.VERSION_1_8
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 sourceSets {
-	chunky1 {
-		java.srcDir 'src/main/java'
-		java.srcDir 'src/chunky-1/java'
-		resources.srcDir 'src/main/resources'
-		resources.srcDir 'src/chunky-1/resources'
-	}
-	chunky2 {
-		java.srcDir 'src/main/java'
-		java.srcDir 'src/chunky-2/java'
-		resources.srcDir 'src/main/resources'
-		resources.srcDir 'src/chunky-2/resources'
-	}
+    main {
+        if (project.properties.get("chunky") == "1") {
+            java.srcDir 'src/main/java'
+            java.srcDir 'src/chunky-1/java'
+            resources.srcDir 'src/main/resources'
+            resources.srcDir 'src/chunky-1/resources'
+        } else {
+            java.srcDir 'src/main/java'
+            java.srcDir 'src/chunky-2/java'
+            resources.srcDir 'src/main/resources'
+            resources.srcDir 'src/chunky-2/resources'
+        }
+    }
 }
 
-task chunky1Jar(type: Jar) {
-	from sourceSets.chunky1.output
-	classifier = 'chunky1'
-}
-
-task chunky2Jar(type: Jar) {
-	from sourceSets.chunky2.output
-	classifier = 'chunky2'
+task pluginJar(type: Jar) {
+	classifier = 'chunky' + project.properties.get("chunky")
+    with jar
 }
 
 dependencies {
-	chunky1Compile 'se.llbit:chunky-core:1.4.5'
-	chunky2Compile 'se.llbit:chunky-core:2.0-beta6'
+    if (project.properties.get("chunky") == "1") {
+        compile 'se.llbit:chunky-core:1.4.5'
+    } else {
+        compile 'se.llbit:chunky-core:2.0-beta6'
+    }
+    runtimeClasspath 'org.apache.commons:commons-math3:3.2'
 }
 
 repositories {
-	mavenLocal()
-	mavenCentral()
-	maven {
-		url 'https://oss.sonatype.org/content/repositories/snapshots/'
-	}
+    mavenLocal()
+    mavenCentral()
+    maven {
+        url 'https://oss.sonatype.org/content/repositories/snapshots/'
+    }
 }
-
-defaultTasks 'chunky1Jar', 'chunky2Jar'
