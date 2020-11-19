@@ -22,6 +22,12 @@ After the rendering is done, the plugin will save the resulting image as `scene-
 
 To view the resulting image, it needs to be converted back to an actual image file. This can be done by the `pfm2png.py` Python 3 script included in this repository or using an online converter, e.g. [this one][convertio].
 
+## Building the plugin
+The plugin can be built for Chunky 1.4.5 and Chunky 2.x by specifying the `chunky` parameter when invoking gradle.
+
+* Chunky 1.4.5: `./gradlew pluginJar -Pchunky=1`
+* Chunky 2.x: `./gradlew pluginJar -Pchunky=2`
+
 ## License
 
 Copyright 2019-2020 Maik Marschner (leMaik)
