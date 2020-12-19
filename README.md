@@ -5,15 +5,21 @@ This is a plugin for [Chunky][chunky] that creates _Portable Float Map_ files (.
 Please use `chunky-denoiser-chunky1.jar` for Chunky 1.x and `chunky-denoiser-chunky2.jar` for Chunky 2.x (i.e. all Chunky versions for Minecraft 1.13 or later).
 
 ## Installation
+
 Download the latest plugin release for your Chunky version from the [releases page](https://github.com/leMaik/chunky-denoiser/releases). In the Chunky Launcher, click on _Manage plugins_ and then on _Add_ and select the `.jar` file you just downloaded. Click on `Save` to store the updated configuration, then start Chunky as usual.
 
+**Compatibility note:** If you are using the [Discord plugin](https://github.com/leMaik/chunky-discord), make sure that it is loaded _after_ the Denoising plugin, i.e. use the _Down_ button to move it below it in the plugin list. Otherwise the denoiser plugin will not work.
+
 ## Usage
+
 Just render a scene as usual. It will render three images and save them as _Portable Float Maps_.
 
 ### Denoise automatically
+
 The Intel Open Image Denoiser can be downloaded [here][openimagedenoise-dl]. After unpacking the archive, you can configure the denoiser executable (`denoiser.exe` on Windows, `denoiser` on Linux) in the _Denoiser_ tab inside Chunky.
 
 ### Invoke the denoiser manually
+
 After the rendering is done, the plugin will save the resulting image as `scene-name.pfm` in the scene directory and start to render a normal image (saved as `scene-name.normal.pfm`) and an Albedo image (`scene-name.albedo.pfm`). These files can be used by [Intel Open Image Denoise][openimagedenoise-dl] like this:
 
 ```
@@ -23,10 +29,11 @@ After the rendering is done, the plugin will save the resulting image as `scene-
 To view the resulting image, it needs to be converted back to an actual image file. This can be done by the `pfm2png.py` Python 3 script included in this repository or using an online converter, e.g. [this one][convertio].
 
 ## Building the plugin
+
 The plugin can be built for Chunky 1.4.5 and Chunky 2.x by specifying the `chunky` parameter when invoking gradle.
 
-* Chunky 1.4.5: `./gradlew pluginJar -Pchunky=1`
-* Chunky 2.x: `./gradlew pluginJar -Pchunky=2`
+- Chunky 1.4.5: `./gradlew pluginJar -Pchunky=1`
+- Chunky 2.x: `./gradlew pluginJar -Pchunky=2`
 
 ## License
 
