@@ -9,6 +9,7 @@ import se.llbit.chunky.renderer.scene.PathTracer;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.chunky.ui.ChunkyFx;
 import se.llbit.chunky.ui.render.RenderControlsTabTransformer;
+import se.llbit.log.Log;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -19,6 +20,18 @@ import java.lang.reflect.Modifier;
 public class DenoiserPlugin implements Plugin {
     @Override
     public void attach(Chunky chunky) {
+        try {
+            Field f = chunky.getClass().getDeclaredField("headless");
+            f.setAccessible(true);
+            boolean headless = f.getBoolean(chunky);
+            if (headless) {
+                Log.warn("The denoiser plugin does not support headless mode and will not be enabled.");
+                return;
+            }
+        } catch (NoSuchFieldException | IllegalAccessException e) {
+            Log.error("Headless mode check failed. Note that the denoiser plugin does not support headless mode.", e);
+        }
+
         CombinedRayTracer rayTracer = new CombinedRayTracer();
         try {
             Field f = chunky.getClass().getDeclaredField("rendererFactory");
