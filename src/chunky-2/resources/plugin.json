@@ -2,7 +2,7 @@
   "name": "DenoiserPlugin",
   "author": "leMaik",
   "main": "de.lemaik.chunky.denoiser.DenoiserPlugin",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "targetVersion": "2.0-beta6",
   "description": "Renders normal and albedo maps to pfm files for use with de-noisers."
 }
