@@ -32,6 +32,7 @@ public class DenoiserPlugin implements Plugin {
 
         RenderControlsTabTransformer prev = chunky.getRenderControlsTabTransformer();
         chunky.setRenderControlsTabTransformer(tabs -> {
+            tabs = prev.apply(tabs);
             tabs.add(DenoiserTab.getImplementation());
             return tabs;
         });
