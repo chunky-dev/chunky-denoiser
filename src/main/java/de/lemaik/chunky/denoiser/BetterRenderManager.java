@@ -65,7 +65,7 @@ public class BetterRenderManager extends RenderManager {
                         try (OutputStream out = new BufferedOutputStream(context.getSceneFileOutputStream(scene.name + ".pfm"))) {
                           writePfmImage(out, true);
                         } catch (IOException e) {
-                          Log.error("Saving the albedo PFM failed", e);
+                          Log.error("Saving the render PFM failed", e);
                         }
 
                         String denoiserPath = PersistentSettings.settings.getString("oidnPath", null);
