@@ -20,8 +20,7 @@ public class DenoiserPlugin implements Plugin {
   @Override
   public void attach(Chunky chunky) {
     if (chunky.isHeadless()) {
-      Log.warn("The denoiser plugin does not support headless mode and will not be enabled.");
-      return;
+      Log.warn("The denoiser plugin does not support headless mode and may break.");
     }
 
     Chunky.addRenderer(new AlbedoRenderer());
