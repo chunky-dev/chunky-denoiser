@@ -1,8 +1,8 @@
 # Denoising Plugin
 
-This is a plugin for [Chunky][chunky] that creates _Portable Float Map_ files (.pfm) for use with denoisers, e.g. [Intel Open Image Denoise][openimagedenoise]. The plugin was compiled for and tested with Chunky 1.4.5 as well as Chunky 2.0-beta6.
+This is a plugin for [Chunky][chunky] that creates _Portable Float Map_ files (.pfm) for use with denoisers, e.g. [Intel Open Image Denoise][openimagedenoise].
 
-Please use `chunky-denoiser-chunky1.jar` for Chunky 1.x and `chunky-denoiser-chunky2.jar` for Chunky 2.x (i.e. all Chunky versions for Minecraft 1.13 or later).
+Please use [version 0.3.2](https://github.com/chunky-dev/chunky-denoiser/releases/tag/v0.3.2) for Chunky 1.x and the [latest version](https://github.com/chunky-dev/chunky-denoiser/releases/latest) for Chunky 2.4.0 or later.
 
 ## Installation
 
@@ -16,7 +16,7 @@ Just render a scene as usual. It will render three images and save them as _Port
 
 ### Denoise automatically
 
-The Intel Open Image Denoiser can be downloaded [here][openimagedenoise-dl]. After unpacking the archive, you can configure the denoiser executable (`denoiser.exe` on Windows, `denoiser` on Linux) in the _Denoiser_ tab inside Chunky.
+The Intel Open Image Denoiser can be downloaded [here][openimagedenoise-dl]. After unpacking the archive, you can configure the denoiser executable (`denoiser.exe` on Windows, `denoiser` on Linux) in the _Denoiser_ tab inside Chunky. If you do this, it will output the denoised image alongside the original image in the scene's snapshots directory.
 
 ### Invoke the denoiser manually
 
@@ -28,16 +28,9 @@ After the rendering is done, the plugin will save the resulting image as `scene-
 
 To view the resulting image, it needs to be converted back to an actual image file. This can be done by the `pfm2png.py` Python 3 script included in this repository or using an online converter, e.g. [this one][convertio].
 
-## Building the plugin
-
-The plugin can be built for Chunky 1.4.5 and Chunky 2.x by specifying the `chunky` parameter when invoking gradle.
-
-- Chunky 1.4.5: `./gradlew pluginJar -Pchunky=1`
-- Chunky 2.x: `./gradlew pluginJar -Pchunky=2`
-
 ## License
 
-Copyright 2019-2020 Maik Marschner (leMaik)
+Copyright 2019-2021 Maik Marschner (leMaik)
 
 Permission to modify and redistribute is granted under the terms of the GNU General Public License, Version 3. See the `LICENSE` file for the full license.
 

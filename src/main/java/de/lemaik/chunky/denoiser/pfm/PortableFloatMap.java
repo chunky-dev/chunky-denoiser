@@ -1,8 +1,5 @@
 package de.lemaik.chunky.denoiser.pfm;
 
-import se.llbit.chunky.resources.BitmapImage;
-import se.llbit.math.ColorUtil;
-
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,6 +7,8 @@ import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
+import se.llbit.chunky.resources.BitmapImage;
+import se.llbit.math.ColorUtil;
 
 public class PortableFloatMap {
     public static void writeImage(double[] pixels, int width, int height, ByteOrder byteOrder, OutputStream out) throws IOException {
