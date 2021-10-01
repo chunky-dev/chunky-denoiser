@@ -1,13 +1,8 @@
 package de.lemaik.chunky.denoiser;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import se.llbit.chunky.Plugin;
 import se.llbit.chunky.main.Chunky;
 import se.llbit.chunky.main.ChunkyOptions;
-import se.llbit.chunky.renderer.SnapshotControl;
-import se.llbit.chunky.renderer.scene.PathTracer;
-import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.chunky.ui.ChunkyFx;
 import se.llbit.chunky.ui.render.RenderControlsTabTransformer;
 import se.llbit.log.Log;
