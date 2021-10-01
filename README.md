@@ -16,7 +16,7 @@ Just render a scene as usual. It will render three images and save them as _Port
 
 ### Denoise automatically
 
-The Intel Open Image Denoiser can be downloaded [here][openimagedenoise-dl]. After unpacking the archive, you can configure the denoiser executable (`denoiser.exe` on Windows, `denoiser` on Linux) in the _Denoiser_ tab inside Chunky. If you do this, it will
+The Intel Open Image Denoiser can be downloaded [here][openimagedenoise-dl]. After unpacking the archive, you can configure the denoiser executable (`denoiser.exe` on Windows, `denoiser` on Linux) in the _Denoiser_ tab inside Chunky. If you do this, it will output the denoised image alongside the original image in the scene's snapshots directory.
 
 ### Invoke the denoiser manually
 
