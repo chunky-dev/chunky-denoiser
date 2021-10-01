@@ -36,11 +36,12 @@ public class NormalRenderer extends PathTracingRenderer {
         }
 
         if (MAP_POSITIVE) {
-          Vector3 normal = new Vector3(ray.n);
+          Vector3 normal = new Vector3(ray.getNormal());
           normal.normalize();
           ray.color.set((normal.x + 1) / 2, (normal.y + 1) / 2, (normal.z + 1) / 2, 1);
         } else {
-          ray.color.set(ray.n.x, ray.n.y, ray.n.z, 1);
+          Vector3 normal = ray.getNormal();
+          ray.color.set(normal.x, normal.y, normal.z, 1);
         }
       }
     }
