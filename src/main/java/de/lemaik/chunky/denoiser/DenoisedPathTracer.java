@@ -69,7 +69,7 @@ public class DenoisedPathTracer extends TileBasedRenderer {
         if (enableAlbedo && albedoSpp > 0) {
             dirtyScene = true;
             scene.spp = 0;
-            scene.setTargetSpp(albedoSpp);
+            scene.setTargetSpp(albedoSpp + 1);
             while (scene.spp < albedoSpp) {
                 renderPass(manager, sppPerPass, albedoTracer);
                 if (postRender.getAsBoolean()) {
@@ -85,7 +85,7 @@ public class DenoisedPathTracer extends TileBasedRenderer {
         if (rendering && enableNormal && normalSpp > 0) {
             dirtyScene = true;
             scene.spp = 0;
-            scene.setTargetSpp(normalSpp);
+            scene.setTargetSpp(normalSpp + 1);
             while (scene.spp < normalSpp) {
                 renderPass(manager, sppPerPass, normalTracer);
                 if (postRender.getAsBoolean()) {
@@ -109,9 +109,13 @@ public class DenoisedPathTracer extends TileBasedRenderer {
         if (rendering) {
             while (scene.spp < scene.getTargetSpp()) {
                 renderPass(manager, sppPerPass, tracer);
-                if (postRender.getAsBoolean()) {
-                    rendering = false;
-                    break;
+                if (scene.spp < scene.getTargetSpp()) {
+                    if (postRender.getAsBoolean()) {
+                        rendering = false;
+                        break;
+                    }
+                } else {
+                    scene.postProcessFrame(TaskTracker.NONE);
                 }
             }
             File out = manager.context.getSceneFile(scene.name + ".beauty.pfm");
