@@ -3,6 +3,7 @@ package de.lemaik.chunky.denoiser;
 import se.llbit.chunky.Plugin;
 import se.llbit.chunky.main.Chunky;
 import se.llbit.chunky.main.ChunkyOptions;
+import se.llbit.chunky.renderer.scene.PathTracer;
 import se.llbit.chunky.ui.ChunkyFx;
 import se.llbit.chunky.ui.render.RenderControlsTabTransformer;
 import se.llbit.log.Log;
@@ -21,7 +22,12 @@ public class DenoiserPlugin implements Plugin {
 
     Chunky.addRenderer(new AlbedoRenderer());
     Chunky.addRenderer(new NormalRenderer());
-    chunky.setRenderManagerFactory(BetterRenderManager::new);
+
+    Chunky.addRenderer(new DenoisedPathTracer(
+            "DenoisedPathTracer",
+            "DenoisedPathTracer",
+            "DenoisedPathTracer",
+            new PathTracer()));
 
     RenderControlsTabTransformer prev = chunky.getRenderControlsTabTransformer();
     chunky.setRenderControlsTabTransformer(tabs -> {

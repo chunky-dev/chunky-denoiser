@@ -47,6 +47,31 @@ public class PortableFloatMap {
         return line.toString();
     }
 
+    public static float[] readToFloatBuffer(InputStream in) throws IOException {
+        try (DataInputStream din = new DataInputStream(in)) {
+            readLine(din); // skip PF
+            String[] size = readLine(din).split(" ");
+            int width = Integer.parseInt(size[0]);
+            int height = Integer.parseInt(size[1]);
+            float scale = Float.parseFloat(readLine(din));
+
+            float[] outputBuffer = new float[3 * width * height];
+            byte[] buff = new byte[12];
+            for (int y = height - 1; y >= 0; y--) {
+                for (int x = 0; x < width; x++) {
+                    din.readFully(buff, 0, 12);
+                    ByteBuffer buffer = ByteBuffer.wrap(buff).order(scale < 0 ? ByteOrder.LITTLE_ENDIAN : ByteOrder.BIG_ENDIAN);
+
+                    int offset = (y * width + x) * 3;
+                    outputBuffer[offset + 0] = buffer.getFloat(0);
+                    outputBuffer[offset + 1] = buffer.getFloat(4);
+                    outputBuffer[offset + 2] = buffer.getFloat(8);
+                }
+            }
+            return outputBuffer;
+        }
+    }
+
     public static BitmapImage readToRgbImage(InputStream in) throws IOException {
         try (DataInputStream din = new DataInputStream(in)) {
             readLine(din); // skip PF
