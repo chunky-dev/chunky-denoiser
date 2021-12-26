@@ -64,21 +64,22 @@ public class DenoisedPathTracer extends MultiPassRenderer {
         int maxSpp = Math.max(sceneTarget, Math.max(albedoSpp, normalSpp));
         scene.setTargetSpp(maxSpp);
 
-        RayTracer[] tracers = new RayTracer[] {tracer, normalTracer, albedoTracer};
-        float[][] buffers = new float[][] {null,
+        RayTracer[] tracers = new RayTracer[] {normalTracer, albedoTracer, tracer};
+        float[][] buffers = new float[][] {
                 enableNormal ? new float[sampleBuffer.length] : null,
-                enableAlbedo ? new float[sampleBuffer.length] : null};
-        boolean[] tracerMask = new boolean[] {true, enableNormal, enableAlbedo};
+                enableAlbedo ? new float[sampleBuffer.length] : null,
+                null};
+        boolean[] tracerMask = new boolean[] {enableNormal, enableAlbedo, true};
 
         if (enableNormal || enableAlbedo) {
             scene.spp = 0;
         }
 
         while (scene.spp < maxSpp) {
-            tracerMask[0] = scene.spp >= originalSpp && scene.spp < sceneTarget;
-            hiddenPasses = !tracerMask[0];
-            tracerMask[1] = scene.spp < normalSpp;
-            tracerMask[2] = scene.spp < albedoSpp;
+            tracerMask[0] = enableNormal && scene.spp < normalSpp;
+            tracerMask[1] = enableAlbedo && scene.spp < albedoSpp;
+            tracerMask[2] = scene.spp >= originalSpp && scene.spp < sceneTarget;
+            hiddenPasses = !tracerMask[2];
             renderPass(manager, manager.context.sppPerPass(), tracers, buffers, tracerMask);
             if (scene.spp < maxSpp && postRender.getAsBoolean()) {
                 aborted = true;
@@ -89,7 +90,7 @@ public class DenoisedPathTracer extends MultiPassRenderer {
         if (!aborted && enableNormal) {
             File out = manager.context.getSceneFile(scene.name + ".normal.pfm");
             try (OutputStream os = new BufferedOutputStream(new FileOutputStream(out))) {
-                PortableFloatMap.writeImage(buffers[1], scene.width, scene.height, ByteOrder.LITTLE_ENDIAN, os);
+                PortableFloatMap.writeImage(buffers[0], scene.width, scene.height, ByteOrder.LITTLE_ENDIAN, os);
             } catch (IOException e) {
                 Log.error("Failed to save normal pass", e);
             }
@@ -98,7 +99,7 @@ public class DenoisedPathTracer extends MultiPassRenderer {
         if (!aborted && enableAlbedo) {
             File out = manager.context.getSceneFile(scene.name + ".albedo.pfm");
             try (OutputStream os = new BufferedOutputStream(new FileOutputStream(out))) {
-                PortableFloatMap.writeImage(buffers[2], scene.width, scene.height, ByteOrder.LITTLE_ENDIAN, os);
+                PortableFloatMap.writeImage(buffers[1], scene.width, scene.height, ByteOrder.LITTLE_ENDIAN, os);
             } catch (IOException e) {
                 Log.error("Failed to save normal pass", e);
             }
