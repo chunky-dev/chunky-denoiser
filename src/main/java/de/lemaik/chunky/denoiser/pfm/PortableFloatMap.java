@@ -1,5 +1,9 @@
 package de.lemaik.chunky.denoiser.pfm;
 
+import se.llbit.chunky.renderer.export.PfmExportFormat;
+import se.llbit.chunky.renderer.export.PictureExportFormat;
+import se.llbit.chunky.renderer.export.PictureExportFormats;
+
 import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -68,5 +72,9 @@ public class PortableFloatMap {
             buff[0] = (byte) in.read();
         }
         return line.toString();
+    }
+
+    public static PictureExportFormat getPfmExportFormat() {
+        return PictureExportFormats.getFormat("PFM").orElseGet(PfmExportFormat::new);
     }
 }

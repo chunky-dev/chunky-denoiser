@@ -5,6 +5,7 @@ import se.llbit.chunky.renderer.DefaultRenderManager;
 import se.llbit.chunky.renderer.scene.RayTracer;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.log.Log;
+import se.llbit.util.TaskTracker;
 
 import java.io.*;
 import java.nio.ByteOrder;
@@ -76,7 +77,11 @@ public class DenoiserPassRenderer extends MultiPassRenderer {
             }
         }
 
-        // TODO Save beauty
+        if (!aborted && settings.getSaveBeauty()) {
+            File out = manager.context.getSceneFile(scene.name + ".beauty.pfm");
+            scene.saveFrame(out, PortableFloatMap.getPfmExportFormat(),
+                    TaskTracker.NONE, manager.context.numRenderThreads());
+        }
 
         if (!aborted && settings.getSaveAlbedo()) {
             File out = manager.context.getSceneFile(scene.name + ".albedo.pfm");

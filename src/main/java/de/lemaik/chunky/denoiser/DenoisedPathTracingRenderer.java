@@ -86,7 +86,11 @@ public class DenoisedPathTracingRenderer extends MultiPassRenderer {
             }
         }
 
-        // TODO Save beauty
+        if (!aborted && settings.getSaveBeauty()) {
+            File out = manager.context.getSceneFile(scene.name + ".beauty.pfm");
+            scene.saveFrame(out, PortableFloatMap.getPfmExportFormat(),
+                    TaskTracker.NONE, manager.context.numRenderThreads());
+        }
 
         if (!aborted && settings.getSaveAlbedo()) {
             File out = manager.context.getSceneFile(scene.name + ".albedo.pfm");
