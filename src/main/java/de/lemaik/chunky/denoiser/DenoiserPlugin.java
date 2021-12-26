@@ -12,6 +12,7 @@ import se.llbit.log.Log;
  * This plugin renders normal and albedo maps for use with image de-noisers.
  */
 public class DenoiserPlugin implements Plugin {
+    public static final String DENOISER_RENDERER_ID = "DenoiserPasses";
 
     @Override
     public void attach(Chunky chunky) {
@@ -20,21 +21,30 @@ public class DenoiserPlugin implements Plugin {
             return;
         }
 
-        Chunky.addRenderer(new AlbedoRenderer());
-        Chunky.addRenderer(new NormalRenderer());
+        DenoiserSettings settings = new DenoiserSettings();
+        Denoiser denoiser = new OidnBinaryDenoiser();
 
-        DenoisedPathTracer renderer = new DenoisedPathTracer(
+        DenoisedPathTracingRenderer denoisedPathTracer = new DenoisedPathTracingRenderer(
+                settings, denoiser,
                 "DenoisedPathTracer",
                 "DenoisedPathTracer",
                 "DenoisedPathTracer",
                 new PathTracer()
         );
-        Chunky.addRenderer(renderer);
+        Chunky.addRenderer(denoisedPathTracer);
+
+        DenoiserPassRenderer inPlaceDenoisingRenderer = new DenoiserPassRenderer(
+                settings, denoiser,
+                DENOISER_RENDERER_ID,
+                "DenoiserPasses",
+                "Renders the denoiser passes."
+        );
+        Chunky.addRenderer(inPlaceDenoisingRenderer);
 
         RenderControlsTabTransformer prev = chunky.getRenderControlsTabTransformer();
         chunky.setRenderControlsTabTransformer(tabs -> {
             tabs = prev.apply(tabs);
-            tabs.add(new DenoiserTabImpl(renderer));
+            tabs.add(new DenoiserTabImpl(settings, chunky));
             return tabs;
         });
     }

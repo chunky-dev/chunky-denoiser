@@ -7,79 +7,74 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.TextField;
 import javafx.stage.FileChooser;
 import se.llbit.chunky.PersistentSettings;
-import se.llbit.chunky.ui.render.RenderControlsTab;
+import se.llbit.chunky.ui.IntegerTextField;
 
 import java.io.File;
 import java.net.URL;
 import java.util.ResourceBundle;
 
 public class DenoiserTab implements Initializable {
-    @FXML
-    private CheckBox albedoMap;
-    @FXML
-    private TextField albedoSpp;
-    @FXML
-    private CheckBox normalMap;
-    @FXML
-    private TextField normalSpp;
-    @FXML
-    private CheckBox normalWaterDisplacement;
-    @FXML
-    private TextField denoiserPath;
-    @FXML
-    private Button selectPath;
+    @FXML private Button denoiseRender;
+    @FXML private CheckBox saveBeauty;
+    @FXML private CheckBox albedoMap;
+    @FXML private IntegerTextField albedoSpp;
+    @FXML private CheckBox saveAlbedo;
+    @FXML private CheckBox normalMap;
+    @FXML private IntegerTextField normalSpp;
+    @FXML private CheckBox saveNormal;
+    @FXML private CheckBox normalWaterDisplacement;
+    @FXML private TextField denoiserPath;
+    @FXML private Button selectPath;
 
-    private final DenoisedPathTracer renderer;
+    private final DenoiserSettings settings;
+    private final DenoiserTabImpl impl;
 
-    public DenoiserTab(DenoisedPathTracer renderer) {
-        super();
-        this.renderer = renderer;
+    public DenoiserTab(DenoiserTabImpl impl) {
+        this.settings = impl.settings;
+        this.impl = impl;
     }
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        albedoMap.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            renderer.enableAlbedo = newValue;
-            if (!newValue) {
-                // albedo map disabled, disable normal map
-                normalMap.setSelected(false);
-            }
+        denoiseRender.setOnAction(e -> {
+            impl.scene.renderTime = 0;
+            impl.scene.setRenderer(DenoiserPlugin.DENOISER_RENDERER_ID);
+            impl.scene.haltRender();
+            impl.scene.setTargetSpp(Math.max(settings.getAlbedoSpp(), settings.getNormalSpp()));
+            impl.scene.startRender();
         });
-        albedoSpp.setText(renderer.albedoSpp + "");
-        albedoSpp.textProperty().addListener((observable, oldValue, newValue) -> {
-            try {
-                renderer.albedoSpp = Integer.parseInt(newValue);
-            } catch (NumberFormatException ignore) {
-            }
-        });
-        albedoSpp.focusedProperty().addListener(((observable, oldValue, newValue) -> {
-            if (!newValue) {
-                albedoSpp.setText(renderer.albedoSpp + "");
-            }
-        }));
 
-        normalMap.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            renderer.enableNormal = newValue;
-            if (newValue) {
-                // normal map enabled, enable albedo map
-                albedoMap.setSelected(true);
-            }
-        });
-        normalSpp.setText(renderer.normalSpp + "");
-        normalSpp.textProperty().addListener((observable, oldValue, newValue) -> {
-            try {
-                renderer.normalSpp = Integer.parseInt(newValue);
-            } catch (NumberFormatException ignore) {
-            }
-        });
-        normalSpp.focusedProperty().addListener(((observable, oldValue, newValue) -> {
-            if (!newValue) {
-                normalSpp.setText(renderer.normalSpp + "");
-            }
-        }));
-        normalWaterDisplacement.selectedProperty().addListener(((observable, oldValue, newValue) -> {
-            NormalTracer.NORMAL_WATER_DISPLACEMENT = newValue;
-        }));
+        settings.addListener(s -> saveBeauty.setSelected(s.getSaveBeauty()));
+        saveBeauty.selectedProperty().addListener(((observable, oldValue, newValue) ->
+                settings.setSaveBeauty(newValue)));
+
+        settings.addListener(s -> albedoMap.setSelected(s.getRenderAlbedo()));
+        albedoMap.selectedProperty().addListener((observable, oldValue, newValue) ->
+                settings.setRenderAlbedo(newValue));
+
+        settings.addListener(s -> albedoSpp.valueProperty().set(s.getAlbedoSpp()));
+        albedoSpp.valueProperty().addListener(((observable, oldValue, newValue) ->
+                settings.setAlbedoSpp(newValue.intValue())));
+
+        settings.addListener(s -> saveAlbedo.setSelected(s.getSaveAlbedo()));
+        saveAlbedo.selectedProperty().addListener(((observable, oldValue, newValue) ->
+                settings.setSaveAlbedo(newValue)));
+
+        settings.addListener(s -> normalMap.setSelected(s.getRenderNormal()));
+        normalMap.selectedProperty().addListener((observable, oldValue, newValue) ->
+                settings.setRenderNormal(newValue));
+
+        settings.addListener(s -> normalSpp.valueProperty().set(s.getNormalSpp()));
+        normalSpp.valueProperty().addListener(((observable, oldValue, newValue) ->
+                settings.setNormalSpp(newValue.intValue())));
+
+        settings.addListener(s -> saveNormal.setSelected(s.getSaveNormal()));
+        saveNormal.selectedProperty().addListener(((observable, oldValue, newValue) ->
+                settings.setSaveNormal(newValue)));
+
+        settings.addListener(s -> normalWaterDisplacement.setSelected(s.getNormalWaterDisplacement()));
+        normalWaterDisplacement.selectedProperty().addListener(((observable, oldValue, newValue) ->
+                settings.setNormalWaterDisplacement(newValue)));
 
         denoiserPath.setText(PersistentSettings.settings.getString("oidnPath", ""));
         selectPath.setOnAction(e -> {

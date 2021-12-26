@@ -14,7 +14,10 @@ import java.io.*;
 import java.nio.ByteOrder;
 import java.util.Arrays;
 
-public class DenoisedPathTracer extends MultiPassRenderer {
+public class DenoisedPathTracingRenderer extends MultiPassRenderer {
+    protected final DenoiserSettings settings;
+    protected final Denoiser denoiser;
+
     protected final String id;
     protected final String name;
     protected final String description;
@@ -25,12 +28,11 @@ public class DenoisedPathTracer extends MultiPassRenderer {
 
     private boolean hiddenPasses = false;
 
-    public boolean enableAlbedo = true;
-    public int albedoSpp = 16;
-    public boolean enableNormal = true;
-    public int normalSpp = 16;
+    public DenoisedPathTracingRenderer(DenoiserSettings settings, Denoiser denoiser,
+                                       String id, String name, String description, RayTracer tracer) {
+        this.settings = settings;
+        this.denoiser = denoiser;
 
-    public DenoisedPathTracer(String id, String name, String description, RayTracer tracer) {
         this.id = id;
         this.name = name;
         this.description = description;
@@ -61,23 +63,20 @@ public class DenoisedPathTracer extends MultiPassRenderer {
         int originalSpp = scene.spp;
         int sceneTarget = scene.getTargetSpp();
 
-        int maxSpp = Math.max(sceneTarget, Math.max(albedoSpp, normalSpp));
+        int maxSpp = Math.max(sceneTarget, Math.max(settings.getAlbedoSpp(), settings.getNormalSpp()));
         scene.setTargetSpp(maxSpp);
 
-        RayTracer[] tracers = new RayTracer[] {normalTracer, albedoTracer, tracer};
+        RayTracer[] tracers = new RayTracer[] {albedoTracer, normalTracer, tracer};
         float[][] buffers = new float[][] {
-                enableNormal ? new float[sampleBuffer.length] : null,
-                enableAlbedo ? new float[sampleBuffer.length] : null,
+                settings.getRenderAlbedo() ? new float[sampleBuffer.length] : null,
+                settings.getRenderNormal() ? new float[sampleBuffer.length] : null,
                 null};
-        boolean[] tracerMask = new boolean[] {enableNormal, enableAlbedo, true};
-
-        if (enableNormal || enableAlbedo) {
-            scene.spp = 0;
-        }
+        boolean[] tracerMask = new boolean[3];
+        scene.spp = 0;
 
         while (scene.spp < maxSpp) {
-            tracerMask[0] = enableNormal && scene.spp < normalSpp;
-            tracerMask[1] = enableAlbedo && scene.spp < albedoSpp;
+            tracerMask[0] = settings.getRenderAlbedo() && scene.spp < settings.getAlbedoSpp();
+            tracerMask[1] = settings.getRenderNormal() && scene.spp < settings.getNormalSpp();
             tracerMask[2] = scene.spp >= originalSpp && scene.spp < sceneTarget;
             hiddenPasses = !tracerMask[2];
             renderPass(manager, manager.context.sppPerPass(), tracers, buffers, tracerMask);
@@ -87,17 +86,19 @@ public class DenoisedPathTracer extends MultiPassRenderer {
             }
         }
 
-        if (!aborted && enableNormal) {
-            File out = manager.context.getSceneFile(scene.name + ".normal.pfm");
+        // TODO Save beauty
+
+        if (!aborted && settings.getSaveAlbedo()) {
+            File out = manager.context.getSceneFile(scene.name + ".albedo.pfm");
             try (OutputStream os = new BufferedOutputStream(new FileOutputStream(out))) {
                 PortableFloatMap.writeImage(buffers[0], scene.width, scene.height, ByteOrder.LITTLE_ENDIAN, os);
             } catch (IOException e) {
-                Log.error("Failed to save normal pass", e);
+                Log.error("Failed to save albedo pass", e);
             }
         }
 
-        if (!aborted && enableAlbedo) {
-            File out = manager.context.getSceneFile(scene.name + ".albedo.pfm");
+        if (!aborted && settings.getSaveNormal()) {
+            File out = manager.context.getSceneFile(scene.name + ".normal.pfm");
             try (OutputStream os = new BufferedOutputStream(new FileOutputStream(out))) {
                 PortableFloatMap.writeImage(buffers[1], scene.width, scene.height, ByteOrder.LITTLE_ENDIAN, os);
             } catch (IOException e) {
@@ -105,33 +106,15 @@ public class DenoisedPathTracer extends MultiPassRenderer {
             }
         }
 
-        // Denoise
         if (!aborted) {
-            String denoiserPath = PersistentSettings.settings.getString("oidnPath", null);
-            if (denoiserPath != null) {
-                File denoisedPfm = manager.context.getSceneFile(scene.name + ".denoised.pfm");
-                try {
-                    File beauty = manager.context.getSceneFile(scene.name + ".beauty.pfm");
-                    scene.saveFrame(beauty,
-                            PictureExportFormats.getFormat("PFM").orElseGet(PfmExportFormat::new),
-                            TaskTracker.NONE, manager.pool.threads);
+            if (denoiser instanceof OidnBinaryDenoiser)
+                ((OidnBinaryDenoiser) denoiser).loadPath();
 
-                    OidnBinaryDenoiser.denoise(denoiserPath,
-                            beauty,
-                            enableAlbedo ? manager.context.getSceneFile(scene.name + ".albedo.pfm") : null,
-                            enableNormal ? manager.context.getSceneFile(scene.name + ".normal.pfm") : null,
-                            denoisedPfm
-                    );
-
-                    float[] denoisedBuffer = PortableFloatMap.readImage(
-                            new BufferedInputStream(new FileInputStream(denoisedPfm)));
-                    if (denoisedBuffer.length != sampleBuffer.length) {
-                        throw new RuntimeException("Denoised dimensions do not match render dimensions.");
-                    }
-                    Arrays.setAll(sampleBuffer, i -> (double) denoisedBuffer[i]);
-                } catch (IOException | RuntimeException e) {
-                    Log.error(e);
-                }
+            try {
+                denoiser.denoiseDouble(scene.width, scene.height, sampleBuffer,
+                        buffers[0], buffers[1], sampleBuffer);
+            } catch (Denoiser.DenoisingFailedException e) {
+                Log.error("Failed to denoise", e);
             }
         }
 

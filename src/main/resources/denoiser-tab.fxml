@@ -8,20 +8,30 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
+<?import se.llbit.chunky.ui.IntegerTextField?>
+<?import javafx.scene.control.Separator?>
 <VBox spacing="10.0" xmlns="http://javafx.com/javafx/8.0.201" xmlns:fx="http://javafx.com/fxml/1">
     <children>
+        <Button fx:id="denoiseRender" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" text="Denoise Current Render"/>
+
+        <CheckBox fx:id="saveBeauty" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" text="Save beauty pass" />
+
+        <Separator/>
         <CheckBox fx:id="albedoMap" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" selected="true" text="Enable albedo map" />
         <HBox alignment="CENTER_LEFT" spacing="5.0">
             <Label text="SPP:" />
-            <TextField fx:id="albedoSpp" prefWidth="50" text="100" />
+            <IntegerTextField fx:id="albedoSpp" prefWidth="50" text="100" />
             <VBox.margin>
                 <Insets left="25.0" />
             </VBox.margin>
         </HBox>
+        <CheckBox fx:id="saveAlbedo" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" text="Save albedo map" />
+
+        <Separator/>
         <CheckBox fx:id="normalMap" mnemonicParsing="false" selected="true" text="Enable normal map (requires albedo map)" />
         <HBox alignment="CENTER_LEFT" spacing="5.0">
             <Label text="SPP:" />
-            <TextField fx:id="normalSpp" prefWidth="50" text="100" />
+            <IntegerTextField fx:id="normalSpp" prefWidth="50" text="100" />
             <VBox.margin>
                 <Insets left="25.0" />
             </VBox.margin>
@@ -29,7 +39,11 @@
         <CheckBox fx:id="normalWaterDisplacement" selected="true" text="Enable water displacement">
          <VBox.margin>
             <Insets left="25.0" />
-         </VBox.margin></CheckBox>
+         </VBox.margin>
+        </CheckBox>
+        <CheckBox fx:id="saveNormal" layoutX="14.0" layoutY="14.0" mnemonicParsing="false" text="Save normal map" />
+
+        <Separator/>
         <HBox alignment="CENTER_LEFT" spacing="5.0">
             <Label layoutX="14.0" layoutY="125.0" text="Denoiser:" />
             <TextField fx:id="denoiserPath" editable="false" layoutX="78.0" layoutY="120.0" prefWidth="200.0" />
