@@ -6,7 +6,6 @@ import se.llbit.chunky.main.ChunkyOptions;
 import se.llbit.chunky.renderer.scene.PathTracer;
 import se.llbit.chunky.ui.ChunkyFx;
 import se.llbit.chunky.ui.render.RenderControlsTabTransformer;
-import se.llbit.log.Log;
 
 /**
  * This plugin renders normal and albedo maps for use with image de-noisers.
@@ -16,11 +15,6 @@ public class DenoiserPlugin implements Plugin {
 
     @Override
     public void attach(Chunky chunky) {
-        if (chunky.isHeadless()) {
-            Log.warn("The denoiser plugin does not support headless mode and will not be enabled.");
-            return;
-        }
-
         DenoiserSettings settings = new DenoiserSettings();
         Denoiser denoiser = new OidnBinaryDenoiser();
 

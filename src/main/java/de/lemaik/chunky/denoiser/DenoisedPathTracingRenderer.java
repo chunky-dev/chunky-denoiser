@@ -1,10 +1,7 @@
 package de.lemaik.chunky.denoiser;
 
 import de.lemaik.chunky.denoiser.pfm.PortableFloatMap;
-import se.llbit.chunky.PersistentSettings;
 import se.llbit.chunky.renderer.DefaultRenderManager;
-import se.llbit.chunky.renderer.export.PfmExportFormat;
-import se.llbit.chunky.renderer.export.PictureExportFormats;
 import se.llbit.chunky.renderer.scene.RayTracer;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.log.Log;
@@ -12,7 +9,6 @@ import se.llbit.util.TaskTracker;
 
 import java.io.*;
 import java.nio.ByteOrder;
-import java.util.Arrays;
 
 public class DenoisedPathTracingRenderer extends MultiPassRenderer {
     protected final DenoiserSettings settings;
