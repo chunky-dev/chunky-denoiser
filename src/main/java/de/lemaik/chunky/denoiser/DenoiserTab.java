@@ -29,45 +29,52 @@ public class DenoiserTab implements Initializable {
     @FXML
     private Button selectPath;
 
+    private final DenoisedPathTracer renderer;
+
+    public DenoiserTab(DenoisedPathTracer renderer) {
+        super();
+        this.renderer = renderer;
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         albedoMap.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            DenoisedPathTracer.enableAlbedo = newValue;
-            if (newValue == false) {
+            renderer.enableAlbedo = newValue;
+            if (!newValue) {
                 // albedo map disabled, disable normal map
                 normalMap.setSelected(false);
             }
         });
-        albedoSpp.setText(DenoisedPathTracer.albedoSpp + "");
+        albedoSpp.setText(renderer.albedoSpp + "");
         albedoSpp.textProperty().addListener((observable, oldValue, newValue) -> {
             try {
-                DenoisedPathTracer.albedoSpp = Integer.parseInt(newValue);
+                renderer.albedoSpp = Integer.parseInt(newValue);
             } catch (NumberFormatException ignore) {
             }
         });
         albedoSpp.focusedProperty().addListener(((observable, oldValue, newValue) -> {
-            if (newValue == false) {
-                albedoSpp.setText(DenoisedPathTracer.albedoSpp + "");
+            if (!newValue) {
+                albedoSpp.setText(renderer.albedoSpp + "");
             }
         }));
 
         normalMap.selectedProperty().addListener((observable, oldValue, newValue) -> {
-            DenoisedPathTracer.enableNormal = newValue;
-            if (newValue == true) {
+            renderer.enableNormal = newValue;
+            if (newValue) {
                 // normal map enabled, enable albedo map
                 albedoMap.setSelected(true);
             }
         });
-        normalSpp.setText(DenoisedPathTracer.normalSpp + "");
+        normalSpp.setText(renderer.normalSpp + "");
         normalSpp.textProperty().addListener((observable, oldValue, newValue) -> {
             try {
-                DenoisedPathTracer.normalSpp = Integer.parseInt(newValue);
+                renderer.normalSpp = Integer.parseInt(newValue);
             } catch (NumberFormatException ignore) {
             }
         });
         normalSpp.focusedProperty().addListener(((observable, oldValue, newValue) -> {
-            if (newValue == false) {
-                normalSpp.setText(DenoisedPathTracer.normalSpp + "");
+            if (!newValue) {
+                normalSpp.setText(renderer.normalSpp + "");
             }
         }));
         normalWaterDisplacement.selectedProperty().addListener(((observable, oldValue, newValue) -> {
@@ -90,9 +97,5 @@ public class DenoiserTab implements Initializable {
                 denoiserPath.setText(denoiser.getAbsolutePath());
             }
         });
-    }
-
-    public static RenderControlsTab getImplementation() {
-        return new DenoiserTabImpl();
     }
 }

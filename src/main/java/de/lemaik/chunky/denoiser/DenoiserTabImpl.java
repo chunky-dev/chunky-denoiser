@@ -8,6 +8,12 @@ import se.llbit.chunky.ui.RenderControlsFxController;
 import se.llbit.chunky.ui.render.RenderControlsTab;
 
 public class DenoiserTabImpl implements RenderControlsTab {
+    private final DenoisedPathTracer renderer;
+
+    public DenoiserTabImpl(DenoisedPathTracer renderer) {
+        this.renderer = renderer;
+    }
+
     @Override
     public void update(Scene scene) {
     }
@@ -25,7 +31,7 @@ public class DenoiserTabImpl implements RenderControlsTab {
     public Node getTabContent() {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/denoiser-tab.fxml"));
-            fxmlLoader.setController(new DenoiserTab());
+            fxmlLoader.setController(new DenoiserTab(renderer));
             return fxmlLoader.load();
         } catch (IOException e) {
             throw new RuntimeException("Could not initialize denoiser plugin", e);

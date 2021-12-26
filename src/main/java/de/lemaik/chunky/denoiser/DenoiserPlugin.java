@@ -13,35 +13,37 @@ import se.llbit.log.Log;
  */
 public class DenoiserPlugin implements Plugin {
 
-  @Override
-  public void attach(Chunky chunky) {
-    if (chunky.isHeadless()) {
-      Log.warn("The denoiser plugin does not support headless mode and will not be enabled.");
-      return;
+    @Override
+    public void attach(Chunky chunky) {
+        if (chunky.isHeadless()) {
+            Log.warn("The denoiser plugin does not support headless mode and will not be enabled.");
+            return;
+        }
+
+        Chunky.addRenderer(new AlbedoRenderer());
+        Chunky.addRenderer(new NormalRenderer());
+
+        DenoisedPathTracer renderer = new DenoisedPathTracer(
+                "DenoisedPathTracer",
+                "DenoisedPathTracer",
+                "DenoisedPathTracer",
+                new PathTracer()
+        );
+        Chunky.addRenderer(renderer);
+
+        RenderControlsTabTransformer prev = chunky.getRenderControlsTabTransformer();
+        chunky.setRenderControlsTabTransformer(tabs -> {
+            tabs = prev.apply(tabs);
+            tabs.add(new DenoiserTabImpl(renderer));
+            return tabs;
+        });
     }
 
-    Chunky.addRenderer(new AlbedoRenderer());
-    Chunky.addRenderer(new NormalRenderer());
-
-    Chunky.addRenderer(new DenoisedPathTracer(
-            "DenoisedPathTracer",
-            "DenoisedPathTracer",
-            "DenoisedPathTracer",
-            new PathTracer()));
-
-    RenderControlsTabTransformer prev = chunky.getRenderControlsTabTransformer();
-    chunky.setRenderControlsTabTransformer(tabs -> {
-      tabs = prev.apply(tabs);
-      tabs.add(DenoiserTab.getImplementation());
-      return tabs;
-    });
-  }
-
-  public static void main(String[] args) throws Exception {
-    // Start Chunky normally with this plugin attached.
-    Chunky.loadDefaultTextures();
-    Chunky chunky = new Chunky(ChunkyOptions.getDefaults());
-    new DenoiserPlugin().attach(chunky);
-    ChunkyFx.startChunkyUI(chunky);
-  }
+    public static void main(String[] args) throws Exception {
+        // Start Chunky normally with this plugin attached.
+        Chunky.loadDefaultTextures();
+        Chunky chunky = new Chunky(ChunkyOptions.getDefaults());
+        new DenoiserPlugin().attach(chunky);
+        ChunkyFx.startChunkyUI(chunky);
+    }
 }
