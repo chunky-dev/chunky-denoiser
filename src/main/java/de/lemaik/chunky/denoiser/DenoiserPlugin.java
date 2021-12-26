@@ -38,12 +38,12 @@ public class DenoiserPlugin implements Plugin {
         RenderControlsTabTransformer prev = chunky.getRenderControlsTabTransformer();
         chunky.setRenderControlsTabTransformer(tabs -> {
             tabs = prev.apply(tabs);
-            tabs.add(new DenoiserTabImpl(settings, chunky));
+            tabs.add(new DenoiserTabImpl(settings));
             return tabs;
         });
     }
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         // Start Chunky normally with this plugin attached.
         Chunky.loadDefaultTextures();
         Chunky chunky = new Chunky(ChunkyOptions.getDefaults());

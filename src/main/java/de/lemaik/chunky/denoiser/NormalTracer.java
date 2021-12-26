@@ -9,19 +9,19 @@ import se.llbit.math.Ray;
 import se.llbit.math.Vector3;
 
 public class NormalTracer implements RayTracer {
-    public static boolean NORMAL_WATER_DISPLACEMENT = true;
-
     /**
      * If true, all values are mapped to positive values so that they can be displayed on the rendered
      * image.
      */
-    private static final boolean MAP_POSITIVE = false;
+    private final static boolean MAP_POSITIVE = false;
+
+    protected DenoiserSettings settings;
 
     @Override
     public void trace(Scene scene, WorkerState state) {
         Ray ray = state.ray;
         if (PreviewRayTracer.nextIntersection(scene, ray)) {
-            if (NORMAL_WATER_DISPLACEMENT && !scene.stillWaterEnabled()
+            if (settings.getNormalWaterDisplacement() && !scene.stillWaterEnabled()
                     && ray.getCurrentMaterial().isWater()) {
                 WaterModel.doWaterDisplacement(ray);
             }

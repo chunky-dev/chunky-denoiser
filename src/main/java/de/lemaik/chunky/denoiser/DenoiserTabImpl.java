@@ -3,19 +3,16 @@ package de.lemaik.chunky.denoiser;
 import java.io.IOException;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
-import se.llbit.chunky.main.Chunky;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.chunky.ui.RenderControlsFxController;
 import se.llbit.chunky.ui.render.RenderControlsTab;
 
 public class DenoiserTabImpl implements RenderControlsTab {
     protected final DenoiserSettings settings;
-    protected final Chunky chunky;
     protected Scene scene;
 
-    public DenoiserTabImpl(DenoiserSettings settings, Chunky chunky) {
+    public DenoiserTabImpl(DenoiserSettings settings) {
         this.settings = settings;
-        this.chunky = chunky;
     }
 
     @Override

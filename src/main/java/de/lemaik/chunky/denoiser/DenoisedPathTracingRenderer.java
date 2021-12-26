@@ -17,16 +17,17 @@ public class DenoisedPathTracingRenderer extends MultiPassRenderer {
     protected final String id;
     protected final String name;
     protected final String description;
-    protected RayTracer tracer;
+    protected final RayTracer tracer;
 
-    protected static final RayTracer albedoTracer = new AlbedoTracer();
-    protected static final RayTracer normalTracer = new NormalTracer();
+    protected final AlbedoTracer albedoTracer = new AlbedoTracer();
+    protected final NormalTracer normalTracer = new NormalTracer();
 
     private boolean hiddenPasses = false;
 
     public DenoisedPathTracingRenderer(DenoiserSettings settings, Denoiser denoiser,
                                        String id, String name, String description, RayTracer tracer) {
         this.settings = settings;
+        this.normalTracer.settings = settings;
         this.denoiser = denoiser;
 
         this.id = id;

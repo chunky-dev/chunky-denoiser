@@ -18,8 +18,8 @@ public class DenoiserPassRenderer extends MultiPassRenderer {
     protected final String name;
     protected final String description;
 
-    protected static final RayTracer albedoTracer = new AlbedoTracer();
-    protected static final RayTracer normalTracer = new NormalTracer();
+    protected final RayTracer albedoTracer = new AlbedoTracer();
+    protected final RayTracer normalTracer = new NormalTracer();
 
     public DenoiserPassRenderer(DenoiserSettings settings, Denoiser denoiser,
                                 String id, String name, String description) {
