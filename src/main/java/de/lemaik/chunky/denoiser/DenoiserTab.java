@@ -92,5 +92,7 @@ public class DenoiserTab implements Initializable {
                 denoiserPath.setText(denoiser.getAbsolutePath());
             }
         });
+
+        settings.updateAll();
     }
 }
