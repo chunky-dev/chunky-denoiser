@@ -21,7 +21,7 @@ public class NormalTracer implements RayTracer {
     public void trace(Scene scene, WorkerState state) {
         Ray ray = state.ray;
         if (PreviewRayTracer.nextIntersection(scene, ray)) {
-            if (settings.getNormalWaterDisplacement() && !scene.stillWaterEnabled()
+            if (settings.normalWaterDisplacement.get() && !scene.stillWaterEnabled()
                     && ray.getCurrentMaterial().isWater()) {
                 WaterModel.doWaterDisplacement(ray);
             }

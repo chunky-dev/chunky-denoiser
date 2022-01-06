@@ -8,7 +8,7 @@ import se.llbit.chunky.renderer.scene.RayTracer;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.math.Ray;
 
-public class AlbedoTracer  implements RayTracer {
+public class AlbedoTracer implements RayTracer {
     @Override
     public void trace(Scene scene, WorkerState state) {
         Ray ray = state.ray;

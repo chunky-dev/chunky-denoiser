@@ -60,20 +60,20 @@ public class DenoisedPathTracingRenderer extends MultiPassRenderer {
         int originalSpp = scene.spp;
         int sceneTarget = scene.getTargetSpp();
 
-        int maxSpp = Math.max(sceneTarget, Math.max(settings.getAlbedoSpp(), settings.getNormalSpp()));
+        int maxSpp = Math.max(sceneTarget, Math.max(settings.albedoSpp.get(), settings.normalSpp.get()));
         scene.setTargetSpp(maxSpp);
 
         RayTracer[] tracers = new RayTracer[] {albedoTracer, normalTracer, tracer};
         float[][] buffers = new float[][] {
-                settings.getRenderAlbedo() ? new float[sampleBuffer.length] : null,
-                settings.getRenderNormal() ? new float[sampleBuffer.length] : null,
+                settings.renderAlbedo.get() ? new float[sampleBuffer.length] : null,
+                settings.renderNormal.get() ? new float[sampleBuffer.length] : null,
                 null};
         boolean[] tracerMask = new boolean[3];
         scene.spp = 0;
 
         while (scene.spp < maxSpp) {
-            tracerMask[0] = settings.getRenderAlbedo() && scene.spp < settings.getAlbedoSpp();
-            tracerMask[1] = settings.getRenderNormal() && scene.spp < settings.getNormalSpp();
+            tracerMask[0] = settings.renderAlbedo.get() && scene.spp < settings.albedoSpp.get();
+            tracerMask[1] = settings.renderNormal.get() && scene.spp < settings.normalSpp.get();
             tracerMask[2] = scene.spp >= originalSpp && scene.spp < sceneTarget;
             hiddenPasses = !tracerMask[2];
             renderPass(manager, manager.context.sppPerPass(), tracers, buffers, tracerMask);
@@ -83,13 +83,13 @@ public class DenoisedPathTracingRenderer extends MultiPassRenderer {
             }
         }
 
-        if (!aborted && settings.getSaveBeauty()) {
+        if (!aborted && settings.saveBeauty.get()) {
             File out = manager.context.getSceneFile(scene.name + ".beauty.pfm");
             scene.saveFrame(out, PortableFloatMap.getPfmExportFormat(),
                     TaskTracker.NONE, manager.context.numRenderThreads());
         }
 
-        if (!aborted && settings.getSaveAlbedo()) {
+        if (!aborted && settings.saveAlbedo.get()) {
             File out = manager.context.getSceneFile(scene.name + ".albedo.pfm");
             try (OutputStream os = new BufferedOutputStream(new FileOutputStream(out))) {
                 PortableFloatMap.writeImage(buffers[0], scene.width, scene.height, ByteOrder.LITTLE_ENDIAN, os);
@@ -98,7 +98,7 @@ public class DenoisedPathTracingRenderer extends MultiPassRenderer {
             }
         }
 
-        if (!aborted && settings.getSaveNormal()) {
+        if (!aborted && settings.saveNormal.get()) {
             File out = manager.context.getSceneFile(scene.name + ".normal.pfm");
             try (OutputStream os = new BufferedOutputStream(new FileOutputStream(out))) {
                 PortableFloatMap.writeImage(buffers[1], scene.width, scene.height, ByteOrder.LITTLE_ENDIAN, os);

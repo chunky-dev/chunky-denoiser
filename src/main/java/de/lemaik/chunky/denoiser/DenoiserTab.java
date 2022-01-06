@@ -40,41 +40,41 @@ public class DenoiserTab implements Initializable {
             impl.scene.renderTime = 0;
             impl.scene.setRenderer(DenoiserPlugin.DENOISER_RENDERER_ID);
             impl.scene.haltRender();
-            impl.scene.setTargetSpp(Math.max(settings.getAlbedoSpp(), settings.getNormalSpp()));
+            impl.scene.setTargetSpp(Math.max(settings.albedoSpp.get(), settings.normalSpp.get()));
             impl.scene.startRender();
         });
 
-        settings.addListener(s -> saveBeauty.setSelected(s.getSaveBeauty()));
+        settings.saveBeauty.addListener(v -> saveBeauty.setSelected(v));
         saveBeauty.selectedProperty().addListener(((observable, oldValue, newValue) ->
-                settings.setSaveBeauty(newValue)));
+                settings.saveBeauty.set(newValue)));
 
-        settings.addListener(s -> albedoMap.setSelected(s.getRenderAlbedo()));
+        settings.renderAlbedo.addListener(v -> albedoMap.setSelected(v));
         albedoMap.selectedProperty().addListener((observable, oldValue, newValue) ->
-                settings.setRenderAlbedo(newValue));
+                settings.renderAlbedo.get());
 
-        settings.addListener(s -> albedoSpp.valueProperty().set(s.getAlbedoSpp()));
+        settings.albedoSpp.addListener(v -> albedoSpp.valueProperty().set(v));
         albedoSpp.valueProperty().addListener(((observable, oldValue, newValue) ->
-                settings.setAlbedoSpp(newValue.intValue())));
+                settings.albedoSpp.set(newValue.intValue())));
 
-        settings.addListener(s -> saveAlbedo.setSelected(s.getSaveAlbedo()));
+        settings.saveAlbedo.addListener(v -> saveAlbedo.setSelected(v));
         saveAlbedo.selectedProperty().addListener(((observable, oldValue, newValue) ->
-                settings.setSaveAlbedo(newValue)));
+                settings.saveAlbedo.set(newValue)));
 
-        settings.addListener(s -> normalMap.setSelected(s.getRenderNormal()));
+        settings.renderNormal.addListener(v -> normalMap.setSelected(v));
         normalMap.selectedProperty().addListener((observable, oldValue, newValue) ->
-                settings.setRenderNormal(newValue));
+                settings.renderNormal.set(newValue));
 
-        settings.addListener(s -> normalSpp.valueProperty().set(s.getNormalSpp()));
+        settings.normalSpp.addListener(v -> normalSpp.valueProperty().set(v));
         normalSpp.valueProperty().addListener(((observable, oldValue, newValue) ->
-                settings.setNormalSpp(newValue.intValue())));
+                settings.normalSpp.set(newValue.intValue())));
 
-        settings.addListener(s -> saveNormal.setSelected(s.getSaveNormal()));
+        settings.saveNormal.addListener(v -> saveNormal.setSelected(v));
         saveNormal.selectedProperty().addListener(((observable, oldValue, newValue) ->
-                settings.setSaveNormal(newValue)));
+                settings.saveNormal.set(newValue)));
 
-        settings.addListener(s -> normalWaterDisplacement.setSelected(s.getNormalWaterDisplacement()));
+        settings.normalWaterDisplacement.addListener(v -> normalWaterDisplacement.setSelected(v));
         normalWaterDisplacement.selectedProperty().addListener(((observable, oldValue, newValue) ->
-                settings.setNormalWaterDisplacement(newValue)));
+                settings.normalWaterDisplacement.set(newValue)));
 
         denoiserPath.setText(PersistentSettings.settings.getString("oidnPath", ""));
         selectPath.setOnAction(e -> {

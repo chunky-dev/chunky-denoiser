@@ -1,42 +1,51 @@
 package de.lemaik.chunky.denoiser;
 
+import de.lemaik.chunky.denoiser.utils.ObservableValue;
 import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.json.Json;
 import se.llbit.json.JsonObject;
 
-import java.util.ArrayList;
-import java.util.function.Consumer;
-
 public class DenoiserSettings {
-    private final ArrayList<Consumer<DenoiserSettings>> listeners = new ArrayList<>();
+    public final ObservableValue<Boolean> saveBeauty = new ObservableValue<>(false);
 
-    private boolean saveBeauty = false;
-    private boolean renderAlbedo = true;
-    private int albedoSpp = 16;
-    private boolean saveAlbedo = false;
-    private boolean renderNormal = true;
-    private int normalSpp = 16;
-    private boolean saveNormal = false;
-    private boolean normalWaterDisplacement = true;
+    public final ObservableValue<Boolean> renderAlbedo = new ObservableValue<>(true);
+    public final ObservableValue<Integer> albedoSpp = new ObservableValue<>(16);
+    public final ObservableValue<Boolean> saveAlbedo = new ObservableValue<>(false);
+
+    public final ObservableValue<Boolean> renderNormal = new ObservableValue<>(true);
+    public final ObservableValue<Integer> normalSpp = new ObservableValue<>(16);
+    public final ObservableValue<Boolean> saveNormal = new ObservableValue<>(false);
+    public final ObservableValue<Boolean> normalWaterDisplacement = new ObservableValue<>(true);
 
     private transient Scene scene = null;
 
     public DenoiserSettings() {
-        addListener(settings -> {
-            Scene scene = settings.scene;
-            if (scene != null) {
-                JsonObject denoiserSettings = new JsonObject();
-                denoiserSettings.set("saveBeauty", Json.of(saveBeauty));
-                denoiserSettings.set("enableAlbedo", Json.of(renderAlbedo));
-                denoiserSettings.set("albedoSpp", Json.of(albedoSpp));
-                denoiserSettings.set("saveAlbedo", Json.of(saveAlbedo));
-                denoiserSettings.set("enableNormal", Json.of(renderNormal));
-                denoiserSettings.set("normalSpp", Json.of(normalSpp));
-                denoiserSettings.set("saveNormal", Json.of(saveNormal));
-                denoiserSettings.set("normalWaterDisplacement", Json.of(normalWaterDisplacement));
-                scene.setAdditionalData("denoiser", denoiserSettings);
-            }
-        });
+        saveBeauty.addListener(this::save);
+
+        renderAlbedo.addListener(this::save);
+        albedoSpp.addListener(this::save);
+        saveAlbedo.addListener(this::save);
+
+        renderNormal.addListener(this::save);
+        normalSpp.addListener(this::save);
+        saveNormal.addListener(this::save);
+        normalWaterDisplacement.addListener(this::save);
+    }
+
+    private <T> void save(T newValue) {
+        Scene scene = this.scene;
+        if (scene != null) {
+            JsonObject denoiserSettings = new JsonObject();
+            denoiserSettings.set("saveBeauty", Json.of(saveBeauty.get()));
+            denoiserSettings.set("enableAlbedo", Json.of(renderAlbedo.get()));
+            denoiserSettings.set("albedoSpp", Json.of(albedoSpp.get()));
+            denoiserSettings.set("saveAlbedo", Json.of(saveAlbedo.get()));
+            denoiserSettings.set("enableNormal", Json.of(renderNormal.get()));
+            denoiserSettings.set("normalSpp", Json.of(normalSpp.get()));
+            denoiserSettings.set("saveNormal", Json.of(saveNormal.get()));
+            denoiserSettings.set("normalWaterDisplacement", Json.of(normalWaterDisplacement.get()));
+            scene.setAdditionalData("denoiser", denoiserSettings);
+        }
     }
 
     public void setScene(Scene scene) {
@@ -45,114 +54,28 @@ public class DenoiserSettings {
         JsonObject denoiserData = scene != null ?
                 scene.getAdditionalData("denoiser").asObject() :
                 new JsonObject();
-        renderAlbedo = denoiserData.get("enableAlbedo").asBoolean(true);
-        albedoSpp = denoiserData.get("albedoSpp").asInt(16);
-        renderNormal = denoiserData.get("enableNormal").asBoolean(true);
-        normalSpp = denoiserData.get("normalSpp").asInt(16);
-        normalWaterDisplacement = denoiserData.get("normalWaterDisplacement").asBoolean(true);
+        saveBeauty.set(denoiserData.get("saveBeauty").asBoolean(false));
 
-        settingsChanged();
+        renderAlbedo.set(denoiserData.get("enableAlbedo").asBoolean(true));
+        albedoSpp.set(denoiserData.get("albedoSpp").asInt(16));
+        saveAlbedo.set(denoiserData.get("saveAlbedo").asBoolean(false));
+
+        renderNormal.set(denoiserData.get("enableNormal").asBoolean(true));
+        normalSpp.set(denoiserData.get("normalSpp").asInt(16));
+        saveNormal.set(denoiserData.get("saveNormal").asBoolean(false));
+        normalWaterDisplacement.set(denoiserData.get("normalWaterDisplacement").asBoolean(true));
     }
 
-    public void addListener(Consumer<DenoiserSettings> listener) {
-        listeners.add(listener);
-    }
+    public void updateAll() {
+        saveBeauty.update();
 
-    public void removeListener(Consumer<DenoiserSettings> listener) {
-        listeners.remove(listener);
-    }
+        renderAlbedo.update();
+        albedoSpp.update();
+        saveAlbedo.update();
 
-    protected void settingsChanged() {
-        listeners.forEach(listener -> listener.accept(this));
-    }
-
-    public boolean getSaveBeauty() {
-        return saveBeauty;
-    }
-
-    public void setSaveBeauty(boolean saveBeauty) {
-        if (saveBeauty != this.saveBeauty) {
-            this.saveBeauty = saveBeauty;
-            settingsChanged();
-        }
-    }
-
-    public boolean getRenderAlbedo() {
-        return renderAlbedo;
-    }
-
-    public void setRenderAlbedo(boolean renderAlbedo) {
-        if (renderAlbedo != this.renderAlbedo) {
-            this.renderAlbedo = renderAlbedo;
-            if (!this.renderAlbedo) renderNormal = false;
-            settingsChanged();
-        }
-    }
-
-    public int getAlbedoSpp() {
-        return albedoSpp;
-    }
-
-    public void setAlbedoSpp(int albedoSpp) {
-        if (albedoSpp != this.albedoSpp) {
-            this.albedoSpp = albedoSpp;
-            settingsChanged();
-        }
-    }
-
-    public boolean getSaveAlbedo() {
-        return saveAlbedo;
-    }
-
-    public void setSaveAlbedo(boolean saveAlbedo) {
-        if (saveAlbedo != this.saveAlbedo) {
-            this.saveAlbedo = saveAlbedo;
-            settingsChanged();
-        }
-    }
-
-    public boolean getRenderNormal() {
-        return renderNormal;
-    }
-
-    public void setRenderNormal(boolean renderNormal) {
-        if (renderNormal != this.renderNormal) {
-            this.renderNormal = renderNormal;
-            if (this.renderNormal) renderAlbedo = true;
-            settingsChanged();
-        }
-    }
-
-    public int getNormalSpp() {
-        return normalSpp;
-    }
-
-    public void setNormalSpp(int normalSpp) {
-        if (normalSpp != this.normalSpp) {
-            this.normalSpp = normalSpp;
-            settingsChanged();
-        }
-    }
-
-    public boolean getSaveNormal() {
-        return saveNormal;
-    }
-
-    public void setSaveNormal(boolean saveNormal) {
-        if (saveNormal != this.saveNormal) {
-            this.saveNormal = saveNormal;
-            settingsChanged();
-        }
-    }
-
-    public boolean getNormalWaterDisplacement() {
-        return normalWaterDisplacement;
-    }
-
-    public void setNormalWaterDisplacement(boolean normalWaterDisplacement) {
-        if (normalWaterDisplacement != this.normalWaterDisplacement) {
-            this.normalWaterDisplacement = normalWaterDisplacement;
-            settingsChanged();
-        }
+        renderNormal.update();
+        normalSpp.update();
+        saveNormal.update();
+        normalWaterDisplacement.update();
     }
 }

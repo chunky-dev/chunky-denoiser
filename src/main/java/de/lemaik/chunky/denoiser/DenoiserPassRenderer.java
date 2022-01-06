@@ -57,19 +57,19 @@ public class DenoiserPassRenderer extends MultiPassRenderer {
         double[] sampleBuffer = scene.getSampleBuffer();
         boolean aborted = false;
 
-        scene.setTargetSpp(Math.max(settings.getAlbedoSpp(), settings.getNormalSpp()));
+        scene.setTargetSpp(Math.max(settings.albedoSpp.get(), settings.normalSpp.get()));
 
         RayTracer[] tracers = new RayTracer[] {albedoTracer, normalTracer};
         float[][] buffers = new float[][] {
-                settings.getRenderAlbedo() ? new float[sampleBuffer.length] : null,
-                settings.getRenderNormal() ? new float[sampleBuffer.length] : null,
+                settings.renderAlbedo.get() ? new float[sampleBuffer.length] : null,
+                settings.renderNormal.get() ? new float[sampleBuffer.length] : null,
         };
         boolean[] tracerMask = new boolean[2];
         scene.spp = 0;
 
         while (scene.spp < scene.getTargetSpp()) {
-            tracerMask[0] = settings.getRenderAlbedo() && scene.spp < settings.getAlbedoSpp();
-            tracerMask[1] = settings.getRenderNormal() && scene.spp < settings.getNormalSpp();
+            tracerMask[0] = settings.renderAlbedo.get() && scene.spp < settings.albedoSpp.get();
+            tracerMask[1] = settings.renderNormal.get() && scene.spp < settings.normalSpp.get();
             renderPass(manager, manager.context.sppPerPass(), tracers, buffers, tracerMask);
             if (scene.spp < scene.getTargetSpp() && postRender.getAsBoolean()) {
                 aborted = true;
@@ -77,13 +77,13 @@ public class DenoiserPassRenderer extends MultiPassRenderer {
             }
         }
 
-        if (!aborted && settings.getSaveBeauty()) {
+        if (!aborted && settings.saveBeauty.get()) {
             File out = manager.context.getSceneFile(scene.name + ".beauty.pfm");
             scene.saveFrame(out, PortableFloatMap.getPfmExportFormat(),
                     TaskTracker.NONE, manager.context.numRenderThreads());
         }
 
-        if (!aborted && settings.getSaveAlbedo()) {
+        if (!aborted && settings.saveAlbedo.get()) {
             File out = manager.context.getSceneFile(scene.name + ".albedo.pfm");
             try (OutputStream os = new BufferedOutputStream(new FileOutputStream(out))) {
                 PortableFloatMap.writeImage(buffers[0], scene.width, scene.height, ByteOrder.LITTLE_ENDIAN, os);
@@ -92,7 +92,7 @@ public class DenoiserPassRenderer extends MultiPassRenderer {
             }
         }
 
-        if (!aborted && settings.getSaveNormal()) {
+        if (!aborted && settings.saveNormal.get()) {
             File out = manager.context.getSceneFile(scene.name + ".normal.pfm");
             try (OutputStream os = new BufferedOutputStream(new FileOutputStream(out))) {
                 PortableFloatMap.writeImage(buffers[1], scene.width, scene.height, ByteOrder.LITTLE_ENDIAN, os);
