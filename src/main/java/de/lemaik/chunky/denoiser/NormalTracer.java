@@ -15,7 +15,11 @@ public class NormalTracer implements RayTracer {
      */
     private final static boolean MAP_POSITIVE = false;
 
-    protected DenoiserSettings settings;
+    private final DenoiserSettings settings;
+
+    public NormalTracer(DenoiserSettings settings) {
+        this.settings = settings;
+    }
 
     @Override
     public void trace(Scene scene, WorkerState state) {

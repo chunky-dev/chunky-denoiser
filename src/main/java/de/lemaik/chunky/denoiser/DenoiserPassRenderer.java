@@ -19,12 +19,14 @@ public class DenoiserPassRenderer extends MultiPassRenderer {
     protected final String description;
 
     protected final RayTracer albedoTracer = new AlbedoTracer();
-    protected final RayTracer normalTracer = new NormalTracer();
+    protected final RayTracer normalTracer;
 
     public DenoiserPassRenderer(DenoiserSettings settings, Denoiser denoiser,
                                 String id, String name, String description) {
         this.settings = settings;
         this.denoiser = denoiser;
+
+        this.normalTracer = new NormalTracer(this.settings);
 
         this.id = id;
         this.name = name;
