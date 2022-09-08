@@ -26,8 +26,6 @@ public class DenoisedPathTracingRenderer extends MultiPassRenderer {
     protected final AlbedoTracer albedoTracer = new AlbedoTracer();
     protected final NormalTracer normalTracer = new NormalTracer();
 
-    private boolean hiddenPasses = false;
-
     public DenoisedPathTracingRenderer(Denoiser denoiser, String id, String name, String description, RayTracer tracer) {
         this.denoiser = denoiser;
         this.id = id;
@@ -54,84 +52,71 @@ public class DenoisedPathTracingRenderer extends MultiPassRenderer {
     @Override
     public void render(DefaultRenderManager manager) throws InterruptedException {
         Scene scene = manager.bufferedScene;
-        double[] sampleBuffer = scene.getSampleBuffer();
-        boolean aborted = false;
-
-        int originalSpp = scene.spp;
-        int sceneTarget = scene.getTargetSpp();
-
         DenoiserSettings settings = new DenoiserSettings();
         settings.loadFromScene(scene);
 
-        int maxSpp = Math.max(sceneTarget, Math.max(settings.albedoSpp.get(), settings.normalSpp.get()));
-        scene.setTargetSpp(maxSpp);
+        double[] sampleBuffer = scene.getSampleBuffer();
 
-        RayTracer[] tracers = new RayTracer[]{albedoTracer, normalTracer, tracer};
-        float[][] buffers = new float[][]{
-                settings.renderAlbedo.get() ? new float[sampleBuffer.length] : null,
-                settings.renderNormal.get() ? new float[sampleBuffer.length] : null,
-                null};
-        boolean[] tracerMask = new boolean[3];
-        scene.spp = 0;
+        boolean albedoEnable = settings.renderAlbedo.get();
+        int albedoTarget = settings.albedoSpp.get();
+        int albedoSampleScale = (int) Math.ceil((double) albedoTarget / scene.getTargetSpp());
+        int albedoSamples = 0;
+        float[] albedoBuffer = albedoEnable ? new float[sampleBuffer.length] : null;
 
-        while (scene.spp < maxSpp) {
-            tracerMask[0] = settings.renderAlbedo.get() && scene.spp < settings.albedoSpp.get();
-            tracerMask[1] = settings.renderNormal.get() && scene.spp < settings.normalSpp.get();
-            tracerMask[2] = scene.spp >= originalSpp && scene.spp < sceneTarget;
-            hiddenPasses = !tracerMask[2];
-            renderPass(manager, manager.context.sppPerPass(), tracers, buffers, tracerMask);
-            if (scene.spp < maxSpp && postRender.getAsBoolean()) {
-                aborted = true;
-                break;
+        boolean normalEnable = settings.renderNormal.get();
+        int normalTarget = settings.normalSpp.get();
+        int normalSampleScale = (int) Math.ceil((double) normalTarget / scene.getTargetSpp());
+        int normalSamples = 0;
+        float[] normalBuffer = normalEnable ? new float[sampleBuffer.length] : null;
+
+        while (scene.spp < scene.getTargetSpp()) {
+            if (albedoEnable && albedoSamples < albedoTarget) {
+                int samples = Math.min(albedoSampleScale, albedoTarget - albedoSamples);
+                albedoSamples = this.renderPass(manager, albedoSamples, samples, albedoTracer, albedoBuffer);
+            }
+            if (normalEnable && normalSamples < normalTarget) {
+                int samples = Math.max(normalSampleScale, normalTarget - normalSamples);
+                normalSamples = this.renderPass(manager, normalSamples, samples, normalTracer, normalBuffer);
+            }
+            scene.spp = renderPass(manager, scene.spp, 1, tracer, null);
+
+            if (scene.spp < scene.getTargetSpp() && postRender.getAsBoolean()) {
+                // Canceled
+                return;
             }
         }
 
-        if (!aborted && settings.saveBeauty.get()) {
+        if (settings.saveBeauty.get()) {
             File out = manager.context.getSceneFile(scene.name + ".beauty.pfm");
             scene.saveFrame(out, PortableFloatMap.getPfmExportFormat(), TaskTracker.NONE);
         }
 
-        if (!aborted && settings.saveAlbedo.get() && buffers[0] != null) {
+        if (settings.saveAlbedo.get() && albedoBuffer != null) {
             File out = manager.context.getSceneFile(scene.name + ".albedo.pfm");
             try (OutputStream os = new BufferedOutputStream(Files.newOutputStream(out.toPath()))) {
-                PortableFloatMap.writeImage(buffers[0], scene.canvasConfig.getWidth(), scene.canvasConfig.getHeight(), ByteOrder.LITTLE_ENDIAN, os);
+                PortableFloatMap.writeImage(albedoBuffer, scene.canvasConfig.getWidth(), scene.canvasConfig.getHeight(), ByteOrder.LITTLE_ENDIAN, os);
             } catch (IOException e) {
                 Log.error("Failed to save albedo pass", e);
             }
         }
 
-        if (!aborted && settings.saveNormal.get() && buffers[1] != null) {
+        if (settings.saveNormal.get() && normalBuffer != null) {
             File out = manager.context.getSceneFile(scene.name + ".normal.pfm");
             try (OutputStream os = new BufferedOutputStream(Files.newOutputStream(out.toPath()))) {
-                PortableFloatMap.writeImage(buffers[1], scene.canvasConfig.getWidth(), scene.canvasConfig.getHeight(), ByteOrder.LITTLE_ENDIAN, os);
+                PortableFloatMap.writeImage(normalBuffer, scene.canvasConfig.getWidth(), scene.canvasConfig.getHeight(), ByteOrder.LITTLE_ENDIAN, os);
             } catch (IOException e) {
                 Log.error("Failed to save normal pass", e);
             }
         }
 
-        if (!aborted) {
-            if (denoiser instanceof OidnBinaryDenoiser)
-                ((OidnBinaryDenoiser) denoiser).loadPath();
-
-            try {
-                denoiser.denoiseDouble(scene.canvasConfig.getWidth(), scene.canvasConfig.getHeight(), sampleBuffer,
-                        buffers[0], buffers[1], sampleBuffer);
-            } catch (Denoiser.DenoisingFailedException e) {
-                Log.error("Failed to denoise", e);
-            }
+        try {
+            manager.getRenderTask().update("Denoising", scene.getTargetSpp(), scene.spp);
+            denoiser.init();
+            denoiser.denoiseDouble(scene.canvasConfig.getWidth(), scene.canvasConfig.getHeight(), sampleBuffer, albedoBuffer, normalBuffer, sampleBuffer);
+        } catch (Denoiser.DenoisingFailedException e) {
+            Log.error("Failed to denoise", e);
         }
 
-        if (scene.spp < originalSpp) {
-            scene.spp = originalSpp;
-        } else if (scene.spp > sceneTarget) {
-            scene.spp = sceneTarget;
-        }
-        scene.setTargetSpp(sceneTarget);
         postRender.getAsBoolean();
-    }
-
-    @Override
-    public boolean autoPostProcess() {
-        return !hiddenPasses;
     }
 }

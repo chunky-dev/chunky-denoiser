@@ -36,6 +36,11 @@ public interface Denoiser {
     }
 
     /**
+     * Initialize this denoiser and prepare it for denoising.
+     */
+    default void init() { }
+
+    /**
      * Denoising failed for some reason.
      */
     final class DenoisingFailedException extends Exception {
