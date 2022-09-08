@@ -25,6 +25,11 @@ public class OidnBinaryDenoiser implements Denoiser {
     }
 
     @Override
+    public void init() {
+        this.loadPath();
+    }
+
+    @Override
     public float[] denoise(int width, int height, float[] beauty, float[] albedo, float[] normal)
             throws DenoisingFailedException{
         File beautyFile;
