@@ -1,4 +1,6 @@
-apply plugin: 'java'
+plugins {
+    id 'org.openjfx.javafxplugin' version '0.0.10'
+}
 jar.enabled = false
 
 sourceCompatibility = '1.8'
@@ -30,6 +32,12 @@ jar {
     }
 }
 
+javafx {
+    version = '17'
+    modules = ['javafx.base', 'javafx.controls', 'javafx.fxml']
+    configuration = 'provided'
+}
+
 repositories {
     mavenLocal()
     mavenCentral()
@@ -37,4 +45,3 @@ repositories {
         url 'https://repo.lemaik.de/'
     }
 }
-
