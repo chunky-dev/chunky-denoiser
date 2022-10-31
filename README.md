@@ -40,7 +40,18 @@ These files can be used by [Intel Open Image Denoise][openimagedenoise-dl] like 
 ./denoise -ldr scene-name.pfm -alb scene-name.albedo.pfm -nrm scene-name.normal.pfm -o output.pfm
 ```
 
-## License
+# Development
+
+It is recommended to use [IntelliJ](https://www.jetbrains.com/idea/). Install the Java17 JDK ([Temurin](https://adoptium.net/) is the recommended distribution).
+Then, [clone](https://www.jetbrains.com/help/idea/set-up-a-git-repository.html#clone-repo) the Chunky repository and let IntelliJ index the project.
+Navigate to `src/main/java/de/lemaik/chunky/denoiser/DenoiserPlugin` and click the green play button next to `public class DenoiserPlugin implements Plugin {` to build and run the denoiser plugin.
+
+To build the plugin externally, run the `gradlew` script in the project root directory. Gradle is setup with a few main tasks:
+
+* `gradlew pluginJar` - Build the denoiser plugin Jar
+* `gradlew clean` - Cleans the project. Removes old builds.
+
+# License
 
 Copyright 2019-2021 Maik Marschner (leMaik)
 
