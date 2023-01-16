@@ -1,5 +1,7 @@
 # Denoising Plugin
 
+**Note: This README is for an development version of the plugin that is not yet released. Click [here](https://github.com/chunky-dev/chunky-denoiser/blob/4d4db51a4a81f77c24cc1def717686c9df67a95d/README.md) for the README for the current version of the plugin, which is 0.4.0.**
+
 This is a plugin for [Chunky][chunky] that creates _Portable Float Map_ files (.pfm) for use with denoisers, e.g. [Intel Open Image Denoise][openimagedenoise].
 
 Please use [version 0.3.2](https://github.com/chunky-dev/chunky-denoiser/releases/tag/v0.3.2) for Chunky 1.x and the [latest version](https://github.com/chunky-dev/chunky-denoiser/releases/latest) for Chunky 2.4.0 or later.
