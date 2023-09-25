@@ -50,7 +50,7 @@ public class DenoiserTab implements Initializable {
 
         settings.renderAlbedo.addListener(v -> albedoMap.setSelected(v));
         albedoMap.selectedProperty().addListener((observable, oldValue, newValue) ->
-                settings.renderAlbedo.get());
+                settings.renderAlbedo.set(newValue));
 
         settings.albedoSpp.addListener(v -> albedoSpp.valueProperty().set(v));
         albedoSpp.valueProperty().addListener(((observable, oldValue, newValue) ->

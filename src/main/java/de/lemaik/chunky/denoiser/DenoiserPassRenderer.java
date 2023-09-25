@@ -9,6 +9,7 @@ import se.llbit.util.TaskTracker;
 
 import java.io.*;
 import java.nio.ByteOrder;
+import java.nio.file.Files;
 
 public class DenoiserPassRenderer extends MultiPassRenderer {
     protected final DenoiserSettings settings;
@@ -57,65 +58,66 @@ public class DenoiserPassRenderer extends MultiPassRenderer {
     public void render(DefaultRenderManager manager) throws InterruptedException {
         Scene scene = manager.bufferedScene;
         double[] sampleBuffer = scene.getSampleBuffer();
-        boolean aborted = false;
 
-        scene.setTargetSpp(Math.max(settings.albedoSpp.get(), settings.normalSpp.get()));
+        boolean albedoEnable = settings.renderAlbedo.get();
+        int albedoTarget = settings.albedoSpp.get();
+        float[] albedoBuffer = albedoEnable ? new float[sampleBuffer.length] : null;
 
-        RayTracer[] tracers = new RayTracer[] {albedoTracer, normalTracer};
-        float[][] buffers = new float[][] {
-                settings.renderAlbedo.get() ? new float[sampleBuffer.length] : null,
-                settings.renderNormal.get() ? new float[sampleBuffer.length] : null,
-        };
-        boolean[] tracerMask = new boolean[2];
-        scene.spp = 0;
+        boolean normalEnable = settings.renderNormal.get();
+        int normalTarget = settings.normalSpp.get();
+        float[] normalBuffer = normalEnable ? new float[sampleBuffer.length] : null;
 
-        while (scene.spp < scene.getTargetSpp()) {
-            tracerMask[0] = settings.renderAlbedo.get() && scene.spp < settings.albedoSpp.get();
-            tracerMask[1] = settings.renderNormal.get() && scene.spp < settings.normalSpp.get();
-            renderPass(manager, manager.context.sppPerPass(), tracers, buffers, tracerMask);
-            if (scene.spp < scene.getTargetSpp() && postRender.getAsBoolean()) {
-                aborted = true;
-                break;
+        if (albedoEnable || normalEnable) {
+            int targetSpp = Math.max(albedoTarget, normalTarget);
+            scene.spp = 0;
+
+            while (scene.spp < targetSpp) {
+                if (albedoEnable && scene.spp < albedoTarget) {
+                    this.renderPass(manager, scene.spp, 1, albedoTracer, albedoBuffer);
+                }
+                if (normalEnable && scene.spp < normalTarget) {
+                    this.renderPass(manager, scene.spp, 1, normalTracer, normalBuffer);
+                }
+                scene.spp += 1;
+                if (scene.spp < targetSpp && postRender.getAsBoolean()) {
+                    // Canceled
+                    return;
+                }
             }
         }
 
-        if (!aborted && settings.saveBeauty.get()) {
+        if (settings.saveBeauty.get()) {
             File out = manager.context.getSceneFile(scene.name + ".beauty.pfm");
             scene.saveFrame(out, PortableFloatMap.getPfmExportFormat(),
                     TaskTracker.NONE, manager.context.numRenderThreads());
         }
 
-        if (!aborted && settings.saveAlbedo.get()) {
+        if (settings.saveAlbedo.get()) {
             File out = manager.context.getSceneFile(scene.name + ".albedo.pfm");
-            try (OutputStream os = new BufferedOutputStream(new FileOutputStream(out))) {
-                PortableFloatMap.writeImage(buffers[0], scene.width, scene.height, ByteOrder.LITTLE_ENDIAN, os);
+            try (OutputStream os = new BufferedOutputStream(Files.newOutputStream(out.toPath()))) {
+                PortableFloatMap.writeImage(albedoBuffer, scene.width, scene.height, ByteOrder.LITTLE_ENDIAN, os);
             } catch (IOException e) {
                 Log.error("Failed to save albedo pass", e);
             }
         }
 
-        if (!aborted && settings.saveNormal.get()) {
+        if (settings.saveNormal.get()) {
             File out = manager.context.getSceneFile(scene.name + ".normal.pfm");
-            try (OutputStream os = new BufferedOutputStream(new FileOutputStream(out))) {
-                PortableFloatMap.writeImage(buffers[1], scene.width, scene.height, ByteOrder.LITTLE_ENDIAN, os);
+            try (OutputStream os = new BufferedOutputStream(Files.newOutputStream(out.toPath()))) {
+                PortableFloatMap.writeImage(normalBuffer, scene.width, scene.height, ByteOrder.LITTLE_ENDIAN, os);
             } catch (IOException e) {
                 Log.error("Failed to save normal pass", e);
             }
         }
 
-        if (!aborted) {
-            if (denoiser instanceof OidnBinaryDenoiser)
-                ((OidnBinaryDenoiser) denoiser).loadPath();
-
-            try {
-                denoiser.denoiseDouble(scene.width, scene.height, sampleBuffer,
-                        buffers[0], buffers[1], sampleBuffer);
-
-                scene.spp = scene.getTargetSpp();
-                postRender.getAsBoolean();
-            } catch (Denoiser.DenoisingFailedException e) {
-                Log.error("Failed to denoise", e);
-            }
+        try {
+            manager.getRenderTask().update("Denoising", scene.getTargetSpp(), scene.spp);
+            denoiser.init();
+            denoiser.denoiseDouble(scene.width, scene.height, sampleBuffer, albedoBuffer, normalBuffer, sampleBuffer);
+        } catch (Denoiser.DenoisingFailedException e) {
+            Log.error("Failed to denoise", e);
         }
+
+        postRender.getAsBoolean();
     }
 }
