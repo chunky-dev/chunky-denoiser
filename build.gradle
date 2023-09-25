@@ -1,5 +1,6 @@
 plugins {
     id 'org.openjfx.javafxplugin' version '0.0.10'
+    id 'maven-publish'
 }
 jar.enabled = false
 
@@ -43,5 +44,37 @@ repositories {
     mavenCentral()
     maven {
         url 'https://repo.lemaik.de/'
+    }
+}
+
+task javadocJar(type: Jar) {
+    classifier = 'javadoc'
+    from javadoc
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    from sourceSets.main.allSource
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            groupId = 'de.lemaik'
+            artifactId = 'chunky-denoiser'
+            version = '0.5.0'
+            from components.java
+
+            pom {
+                name = 'chunky-denoiser'
+
+                licenses {
+                    license {
+                        name = 'GNU General Public License v3.0 (GPL-3.0)'
+                        url = 'https://github.com/chunky-dev/chunky-denoiser/blob/master/LICENSE'
+                    }
+                }
+            }
+        }
     }
 }
