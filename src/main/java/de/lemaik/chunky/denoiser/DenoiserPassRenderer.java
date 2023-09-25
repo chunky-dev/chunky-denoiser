@@ -7,8 +7,12 @@ import se.llbit.chunky.renderer.scene.Scene;
 import se.llbit.log.Log;
 import se.llbit.util.TaskTracker;
 
-import java.io.*;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.nio.ByteOrder;
+import java.nio.file.Files;
 
 public class DenoiserPassRenderer extends MultiPassRenderer {
     protected final DenoiserSettings settings;
@@ -61,8 +65,8 @@ public class DenoiserPassRenderer extends MultiPassRenderer {
 
         scene.setTargetSpp(Math.max(settings.albedoSpp.get(), settings.normalSpp.get()));
 
-        RayTracer[] tracers = new RayTracer[] {albedoTracer, normalTracer};
-        float[][] buffers = new float[][] {
+        RayTracer[] tracers = new RayTracer[]{albedoTracer, normalTracer};
+        float[][] buffers = new float[][]{
                 settings.renderAlbedo.get() ? new float[sampleBuffer.length] : null,
                 settings.renderNormal.get() ? new float[sampleBuffer.length] : null,
         };
@@ -81,13 +85,12 @@ public class DenoiserPassRenderer extends MultiPassRenderer {
 
         if (!aborted && settings.saveBeauty.get()) {
             File out = manager.context.getSceneFile(scene.name + ".beauty.pfm");
-            scene.saveFrame(out, PortableFloatMap.getPfmExportFormat(),
-                    TaskTracker.NONE, manager.context.numRenderThreads());
+            scene.saveFrame(out, PortableFloatMap.getPfmExportFormat(), TaskTracker.NONE);
         }
 
         if (!aborted && settings.saveAlbedo.get()) {
             File out = manager.context.getSceneFile(scene.name + ".albedo.pfm");
-            try (OutputStream os = new BufferedOutputStream(new FileOutputStream(out))) {
+            try (OutputStream os = new BufferedOutputStream(Files.newOutputStream(out.toPath()))) {
                 PortableFloatMap.writeImage(buffers[0], scene.width, scene.height, ByteOrder.LITTLE_ENDIAN, os);
             } catch (IOException e) {
                 Log.error("Failed to save albedo pass", e);
@@ -96,7 +99,7 @@ public class DenoiserPassRenderer extends MultiPassRenderer {
 
         if (!aborted && settings.saveNormal.get()) {
             File out = manager.context.getSceneFile(scene.name + ".normal.pfm");
-            try (OutputStream os = new BufferedOutputStream(new FileOutputStream(out))) {
+            try (OutputStream os = new BufferedOutputStream(Files.newOutputStream(out.toPath()))) {
                 PortableFloatMap.writeImage(buffers[1], scene.width, scene.height, ByteOrder.LITTLE_ENDIAN, os);
             } catch (IOException e) {
                 Log.error("Failed to save normal pass", e);
