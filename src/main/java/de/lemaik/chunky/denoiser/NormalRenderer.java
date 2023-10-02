@@ -1,6 +1,6 @@
 package de.lemaik.chunky.denoiser;
 
-import se.llbit.chunky.model.WaterModel;
+import se.llbit.chunky.model.minecraft.WaterModel;
 import se.llbit.chunky.renderer.PathTracingRenderer;
 import se.llbit.chunky.renderer.WorkerState;
 import se.llbit.chunky.renderer.scene.PreviewRayTracer;
