@@ -1,7 +1,7 @@
 package de.lemaik.chunky.denoiser;
 
-import se.llbit.chunky.block.Air;
-import se.llbit.chunky.block.Water;
+import se.llbit.chunky.block.minecraft.Air;
+import se.llbit.chunky.block.minecraft.Water;
 import se.llbit.chunky.renderer.PathTracingRenderer;
 import se.llbit.chunky.renderer.WorkerState;
 import se.llbit.chunky.renderer.scene.PreviewRayTracer;

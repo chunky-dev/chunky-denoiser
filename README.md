@@ -8,27 +8,50 @@ Please use [version 0.3.2](https://github.com/chunky-dev/chunky-denoiser/release
 
 Download the latest plugin release for your Chunky version from the [releases page](https://github.com/leMaik/chunky-denoiser/releases). In the Chunky Launcher, click on _Manage plugins_ and then on _Add_ and select the `.jar` file you just downloaded. Click on `Save` to store the updated configuration, then start Chunky as usual.
 
-**Compatibility note:** If you are using the [Discord plugin](https://github.com/leMaik/chunky-discord), make sure that it is loaded _after_ the Denoising plugin, i.e. use the _Down_ button to move it below it in the plugin list. Otherwise the denoiser plugin will not work.
+Download the Intel Open Image Denoiser [here][openimagedenoise-dl]. After unpacking the archive in a safe location, you can configure the denoiser executable (`denoiser.exe` on Windows, `denoiser` on Linux) in the `Denoiser` tab inside Chunky.
 
 ## Usage
 
-Just render a scene as usual. It will render three images and save them as _Portable Float Maps_.
+Select the `DenoisedPathTracer` in the `Advanced` tab:
 
-### Denoise automatically
+![image](https://user-images.githubusercontent.com/42661490/147403029-54d291c2-8142-4a36-b6ea-4485156f9484.png)
 
-The Intel Open Image Denoiser can be downloaded [here][openimagedenoise-dl]. After unpacking the archive, you can configure the denoiser executable (`denoiser.exe` on Windows, `denoiser` on Linux) in the _Denoiser_ tab inside Chunky. If you do this, it will output the denoised image alongside the original image in the scene's snapshots directory.
+Then render the scene as usual. It will automatically render all passes and denoise the final image.
 
-### Invoke the denoiser manually
+### Denoising an Existing Render
 
-After the rendering is done, the plugin will save the resulting image as `scene-name.pfm` in the scene directory and start to render a normal image (saved as `scene-name.normal.pfm`) and an Albedo image (`scene-name.albedo.pfm`). These files can be used by [Intel Open Image Denoise][openimagedenoise-dl] like this:
+Existing renders can be denoised by clicking on the `Denoise Current Render` button in the `Denoiser` tab:
+
+![image](https://user-images.githubusercontent.com/42661490/147403139-67f3661c-1575-407f-af05-1d8780f68c73.png)
+
+**WARNING: this will overwrite your existing render.**
+
+It will automatically render all passes and denoise the final image.
+
+### Denoising Outside Chunky
+
+By checking `Save albedo map` and `Save normal map`, the denoised renderers will automatically save the albedo and normal maps as `.pfm` files inside the scene directory.
+
+![image](https://user-images.githubusercontent.com/42661490/147403108-78aa1b33-5549-46de-8194-3f33d2e799a0.png)
+
+These files can be used by [Intel Open Image Denoise][openimagedenoise-dl] like this:
 
 ```
 ./denoise -ldr scene-name.pfm -alb scene-name.albedo.pfm -nrm scene-name.normal.pfm -o output.pfm
 ```
 
-To view the resulting image, it needs to be converted back to an actual image file. This can be done by the `pfm2png.py` Python 3 script included in this repository or using an online converter, e.g. [this one][convertio].
+# Development
 
-## License
+It is recommended to use [IntelliJ](https://www.jetbrains.com/idea/). Install the Java17 JDK ([Temurin](https://adoptium.net/) is the recommended distribution).
+Then, [clone](https://www.jetbrains.com/help/idea/set-up-a-git-repository.html#clone-repo) the Chunky repository and let IntelliJ index the project.
+Navigate to `src/main/java/de/lemaik/chunky/denoiser/DenoiserPlugin` and click the green play button next to `public class DenoiserPlugin implements Plugin {` to build and run the denoiser plugin.
+
+To build the plugin externally, run the `gradlew` script in the project root directory. Gradle is setup with a few main tasks:
+
+* `gradlew pluginJar` - Build the denoiser plugin Jar
+* `gradlew clean` - Cleans the project. Removes old builds.
+
+# License
 
 Copyright 2019-2021 Maik Marschner (leMaik)
 
