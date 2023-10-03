@@ -3,7 +3,6 @@ package de.lemaik.chunky.denoiser;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import se.llbit.chunky.renderer.scene.Scene;
-import se.llbit.chunky.ui.controller.RenderControlsFxController;
 import se.llbit.chunky.ui.render.RenderControlsTab;
 
 import java.io.IOException;
@@ -11,10 +10,6 @@ import java.io.IOException;
 public class DenoiserTabImpl implements RenderControlsTab {
     @Override
     public void update(Scene scene) {
-    }
-
-    @Override
-    public void setController(RenderControlsFxController controller) {
     }
 
     @Override

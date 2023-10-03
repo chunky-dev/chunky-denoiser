@@ -1,12 +1,11 @@
 package de.lemaik.chunky.denoiser;
 
-import se.llbit.chunky.block.minecraft.Air;
-import se.llbit.chunky.block.minecraft.Water;
 import se.llbit.chunky.renderer.PathTracingRenderer;
 import se.llbit.chunky.renderer.WorkerState;
 import se.llbit.chunky.renderer.scene.PreviewRayTracer;
 import se.llbit.chunky.renderer.scene.RayTracer;
 import se.llbit.chunky.renderer.scene.Scene;
+import se.llbit.chunky.world.Material;
 import se.llbit.math.Ray;
 
 public class AlbedoRenderer extends PathTracingRenderer {
@@ -24,9 +23,9 @@ public class AlbedoRenderer extends PathTracingRenderer {
     public void trace(Scene scene, WorkerState state) {
       Ray ray = state.ray;
       if (scene.isInWater(ray)) {
-        ray.setCurrentMaterial(Water.INSTANCE, 0);
+        ray.setCurrentMaterial(ChunkyCompatHelper.Water.INSTANCE, 0);
       } else {
-        ray.setCurrentMaterial(Air.INSTANCE, 0);
+        ray.setCurrentMaterial(ChunkyCompatHelper.Air.INSTANCE, 0);
       }
 
       while (true) {
@@ -44,7 +43,7 @@ public class AlbedoRenderer extends PathTracingRenderer {
           break;
         }
 
-        if (ray.getCurrentMaterial() != Air.INSTANCE && ray.color.w > 0.0D) {
+        if (ray.getCurrentMaterial() != ChunkyCompatHelper.Air.INSTANCE && ray.color.w > 0.0D) {
           break;
         }
 
