@@ -29,7 +29,7 @@ public class NormalRenderer extends PathTracingRenderer {
     public void trace(Scene scene, WorkerState state) {
       Ray ray = state.ray;
       if (PreviewRayTracer.nextIntersection(scene, ray)) {
-        if (BetterRenderManager.NORMAL_WATER_DISPLACEMENT && !scene.stillWaterEnabled()
+        if (BetterRenderManager.NORMAL_WATER_DISPLACEMENT && !ChunkyCompatHelper.Scene.isStillWaterEnabled(scene)
             && ray.getCurrentMaterial().isWater()) {
           ChunkyCompatHelper.Water.doWaterDisplacement(ray);
         }

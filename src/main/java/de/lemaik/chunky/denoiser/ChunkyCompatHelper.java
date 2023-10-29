@@ -22,7 +22,7 @@ public class ChunkyCompatHelper {
         try {
             return className.getDeclaredMethod(methodName, parameterTypes);
         } catch (NoSuchMethodException e) {
-            throw new RuntimeException("Could not invoke " + methodName + " on class " + className.getName(), e);
+            throw new RuntimeException("Could not get method " + methodName + " of class " + className.getName(), e);
         }
     }
 
@@ -62,6 +62,31 @@ public class ChunkyCompatHelper {
             } catch (IllegalAccessException | InvocationTargetException e) {
                 throw new RuntimeException("Could not invoke doWaterDisplacement", e);
             }
+        }
+    }
+
+    public static class Scene {
+        private static Method stillWaterEnabled;
+
+        private static Class<?> stillWaterShader;
+
+        static {
+            try {
+                stillWaterEnabled = se.llbit.chunky.renderer.scene.Scene.class.getDeclaredMethod("stillWaterEnabled");
+            } catch (NoSuchMethodException e) {
+                stillWaterShader = ChunkyCompatHelper.getClass("se.llbit.chunky.renderer.scene.StillWaterShader");
+            }
+        }
+
+        public static boolean isStillWaterEnabled(se.llbit.chunky.renderer.scene.Scene scene) {
+            if (stillWaterEnabled != null) {
+                try {
+                    return (boolean) stillWaterEnabled.invoke(scene);
+                } catch (InvocationTargetException | IllegalAccessException e) {
+                    throw new RuntimeException("Could not invoke stillWaterEnabled()", e);
+                }
+            }
+            return stillWaterShader.isInstance(scene.getCurrentWaterShader());
         }
     }
 }
