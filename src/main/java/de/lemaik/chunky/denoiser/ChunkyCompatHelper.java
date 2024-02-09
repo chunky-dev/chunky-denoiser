@@ -70,12 +70,22 @@ public class ChunkyCompatHelper {
 
         private static Class<?> stillWaterShader;
 
+        private static Method getSky;
+
+        private static Class<?> sky;
+
+        private static Method getSkyColorInterpolated;
+
         static {
             try {
                 stillWaterEnabled = se.llbit.chunky.renderer.scene.Scene.class.getDeclaredMethod("stillWaterEnabled");
             } catch (NoSuchMethodException e) {
                 stillWaterShader = ChunkyCompatHelper.getClass("se.llbit.chunky.renderer.scene.StillWaterShader");
             }
+
+            getSky = ChunkyCompatHelper.getMethod(se.llbit.chunky.renderer.scene.Scene.class, "sky");
+            sky = ChunkyCompatHelper.getClass("se.llbit.chunky.renderer.scene.Sky", "se.llbit.chunky.renderer.scene.sky.Sky");
+            getSkyColorInterpolated = ChunkyCompatHelper.getMethod(sky, "getSkyColorInterpolated", Ray.class);
         }
 
         public static boolean isStillWaterEnabled(se.llbit.chunky.renderer.scene.Scene scene) {
@@ -87,6 +97,14 @@ public class ChunkyCompatHelper {
                 }
             }
             return stillWaterShader.isInstance(scene.getCurrentWaterShader());
+        }
+
+        public static void getSkyColorInterpolated(se.llbit.chunky.renderer.scene.Scene scene, Ray ray) {
+            try {
+                getSkyColorInterpolated.invoke(getSky.invoke(scene), ray);
+            } catch (InvocationTargetException | IllegalAccessException e2) {
+                throw new RuntimeException("Could not invoke sky().getSkyColorInterpolated(ray)", e2);
+            }
         }
     }
 }

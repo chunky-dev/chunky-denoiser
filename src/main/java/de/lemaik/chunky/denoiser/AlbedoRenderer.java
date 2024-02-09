@@ -5,7 +5,6 @@ import se.llbit.chunky.renderer.WorkerState;
 import se.llbit.chunky.renderer.scene.PreviewRayTracer;
 import se.llbit.chunky.renderer.scene.RayTracer;
 import se.llbit.chunky.renderer.scene.Scene;
-import se.llbit.chunky.world.Material;
 import se.llbit.math.Ray;
 
 public class AlbedoRenderer extends PathTracingRenderer {
@@ -36,7 +35,7 @@ public class AlbedoRenderer extends PathTracingRenderer {
           } else if (ray.depth == 0) {
             // direct sky hit
             if (!scene.transparentSky()) {
-              scene.sky().getSkyColorInterpolated(ray);
+              ChunkyCompatHelper.Scene.getSkyColorInterpolated(scene, ray);
             }
           }
           // ignore indirect sky hits
