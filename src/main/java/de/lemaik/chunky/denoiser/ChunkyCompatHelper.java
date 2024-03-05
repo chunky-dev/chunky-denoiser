@@ -3,6 +3,7 @@ package de.lemaik.chunky.denoiser;
 import se.llbit.chunky.world.Material;
 import se.llbit.math.Ray;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -23,6 +24,14 @@ public class ChunkyCompatHelper {
             return className.getDeclaredMethod(methodName, parameterTypes);
         } catch (NoSuchMethodException e) {
             throw new RuntimeException("Could not get method " + methodName + " of class " + className.getName(), e);
+        }
+    }
+
+    private static Field getField(Class<?> className, String fieldName) {
+        try {
+            return className.getDeclaredField(fieldName);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException("Could not get field " + fieldName + " of class " + className.getName(), e);
         }
     }
 
@@ -76,6 +85,10 @@ public class ChunkyCompatHelper {
 
         private static Method getSkyColorInterpolated;
 
+        private static Field width;
+
+        private static Field height;
+
         static {
             try {
                 stillWaterEnabled = se.llbit.chunky.renderer.scene.Scene.class.getDeclaredMethod("stillWaterEnabled");
@@ -86,6 +99,15 @@ public class ChunkyCompatHelper {
             getSky = ChunkyCompatHelper.getMethod(se.llbit.chunky.renderer.scene.Scene.class, "sky");
             sky = ChunkyCompatHelper.getClass("se.llbit.chunky.renderer.scene.Sky", "se.llbit.chunky.renderer.scene.sky.Sky");
             getSkyColorInterpolated = ChunkyCompatHelper.getMethod(sky, "getSkyColorInterpolated", Ray.class);
+
+            try {
+                width = ChunkyCompatHelper.getField(se.llbit.chunky.renderer.scene.Scene.class, "width");
+                height = ChunkyCompatHelper.getField(se.llbit.chunky.renderer.scene.Scene.class, "height");
+            } catch (RuntimeException e) {
+                if (!(e.getCause() instanceof NoSuchFieldException)) {
+                    throw e;
+                }
+            }
         }
 
         public static boolean isStillWaterEnabled(se.llbit.chunky.renderer.scene.Scene scene) {
@@ -105,6 +127,28 @@ public class ChunkyCompatHelper {
             } catch (InvocationTargetException | IllegalAccessException e2) {
                 throw new RuntimeException("Could not invoke sky().getSkyColorInterpolated(ray)", e2);
             }
+        }
+
+        public static int getCanvasWidth(se.llbit.chunky.renderer.scene.Scene scene) {
+            if (width != null) {
+                try {
+                    return (int) width.get(scene);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException("Could not get width", e);
+                }
+            }
+            return scene.canvasConfig.getWidth();
+        }
+
+        public static int getCanvasHeight(se.llbit.chunky.renderer.scene.Scene scene) {
+            if (height != null) {
+                try {
+                    return (int) height.get(scene);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException("Could not get height", e);
+                }
+            }
+            return scene.canvasConfig.getHeight();
         }
     }
 }
