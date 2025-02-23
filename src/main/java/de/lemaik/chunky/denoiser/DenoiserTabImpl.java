@@ -9,17 +9,14 @@ import se.llbit.chunky.ui.render.RenderControlsTab;
 import java.io.IOException;
 
 public class DenoiserTabImpl implements RenderControlsTab {
-    protected final DenoiserSettings settings;
+    protected final DenoiserSettings settings = new DenoiserSettings();
     protected Scene scene;
-
-    public DenoiserTabImpl(DenoiserSettings settings) {
-        this.settings = settings;
-    }
 
     @Override
     public void update(Scene scene) {
         this.scene = scene;
-        settings.setScene(scene);
+        settings.loadFromScene(scene);
+        settings.setChangeListener(() -> settings.saveToScene(scene));
     }
 
     @Override

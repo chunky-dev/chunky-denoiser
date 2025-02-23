@@ -4,6 +4,7 @@ import de.lemaik.chunky.denoiser.pfm.PortableFloatMap;
 import se.llbit.chunky.renderer.DefaultRenderManager;
 import se.llbit.chunky.renderer.scene.RayTracer;
 import se.llbit.chunky.renderer.scene.Scene;
+import se.llbit.json.JsonValue;
 import se.llbit.log.Log;
 import se.llbit.util.TaskTracker;
 
@@ -15,7 +16,6 @@ import java.nio.ByteOrder;
 import java.nio.file.Files;
 
 public class DenoisedPathTracingRenderer extends MultiPassRenderer {
-    protected final DenoiserSettings settings;
     protected final Denoiser denoiser;
 
     protected final String id;
@@ -24,17 +24,12 @@ public class DenoisedPathTracingRenderer extends MultiPassRenderer {
     protected final RayTracer tracer;
 
     protected final AlbedoTracer albedoTracer = new AlbedoTracer();
-    protected final NormalTracer normalTracer;
+    protected final NormalTracer normalTracer = new NormalTracer();
 
     private boolean hiddenPasses = false;
 
-    public DenoisedPathTracingRenderer(DenoiserSettings settings, Denoiser denoiser,
-                                       String id, String name, String description, RayTracer tracer) {
-        this.settings = settings;
+    public DenoisedPathTracingRenderer(Denoiser denoiser, String id, String name, String description, RayTracer tracer) {
         this.denoiser = denoiser;
-
-        this.normalTracer = new NormalTracer(settings);
-
         this.id = id;
         this.name = name;
         this.description = description;
@@ -64,6 +59,9 @@ public class DenoisedPathTracingRenderer extends MultiPassRenderer {
 
         int originalSpp = scene.spp;
         int sceneTarget = scene.getTargetSpp();
+
+        DenoiserSettings settings = new DenoiserSettings();
+        settings.loadFromScene(scene);
 
         int maxSpp = Math.max(sceneTarget, Math.max(settings.albedoSpp.get(), settings.normalSpp.get()));
         scene.setTargetSpp(maxSpp);
