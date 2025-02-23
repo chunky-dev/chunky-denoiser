@@ -15,17 +15,11 @@ public class NormalTracer implements RayTracer {
      */
     private final static boolean MAP_POSITIVE = false;
 
-    private final DenoiserSettings settings;
-
-    public NormalTracer(DenoiserSettings settings) {
-        this.settings = settings;
-    }
-
     @Override
     public void trace(Scene scene, WorkerState state) {
         Ray ray = state.ray;
         if (PreviewRayTracer.nextIntersection(scene, ray)) {
-            if (settings.normalWaterDisplacement.get() && scene.getWaterShadingStrategy() != WaterShadingStrategy.STILL
+            if (DenoiserSettings.isWaterDisplacementEnabled(scene) && scene.getWaterShadingStrategy() != WaterShadingStrategy.STILL
                     && ray.getCurrentMaterial().isWater()) {
                 scene.getCurrentWaterShader().doWaterShading(ray, scene.getAnimationTime());
             }

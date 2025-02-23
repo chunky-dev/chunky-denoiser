@@ -62,7 +62,7 @@ publishing {
         mavenJava(MavenPublication) {
             groupId = 'de.lemaik'
             artifactId = 'chunky-denoiser'
-            version = '0.5.0-pre2'
+            version = '0.5.0-pre3'
             from components.java
 
             pom {

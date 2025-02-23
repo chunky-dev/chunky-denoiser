@@ -15,7 +15,6 @@ import java.nio.ByteOrder;
 import java.nio.file.Files;
 
 public class DenoiserPassRenderer extends MultiPassRenderer {
-    protected final DenoiserSettings settings;
     protected final Denoiser denoiser;
 
     protected final String id;
@@ -25,12 +24,11 @@ public class DenoiserPassRenderer extends MultiPassRenderer {
     protected final RayTracer albedoTracer = new AlbedoTracer();
     protected final RayTracer normalTracer;
 
-    public DenoiserPassRenderer(DenoiserSettings settings, Denoiser denoiser,
+    public DenoiserPassRenderer(Denoiser denoiser,
                                 String id, String name, String description) {
-        this.settings = settings;
         this.denoiser = denoiser;
 
-        this.normalTracer = new NormalTracer(this.settings);
+        this.normalTracer = new NormalTracer();
 
         this.id = id;
         this.name = name;
@@ -62,6 +60,9 @@ public class DenoiserPassRenderer extends MultiPassRenderer {
         Scene scene = manager.bufferedScene;
         double[] sampleBuffer = scene.getSampleBuffer();
         boolean aborted = false;
+
+        DenoiserSettings settings = new DenoiserSettings();
+        settings.loadFromScene(scene);
 
         scene.setTargetSpp(Math.max(settings.albedoSpp.get(), settings.normalSpp.get()));
 

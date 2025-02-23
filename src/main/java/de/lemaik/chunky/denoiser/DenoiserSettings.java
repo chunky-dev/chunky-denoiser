@@ -16,24 +16,59 @@ public class DenoiserSettings {
     public final ObservableValue<Integer> normalSpp = new ObservableValue<>(16);
     public final ObservableValue<Boolean> saveNormal = new ObservableValue<>(false);
     public final ObservableValue<Boolean> normalWaterDisplacement = new ObservableValue<>(true);
+    private Runnable changeCallback;
 
-    private transient Scene scene = null;
-
-    public DenoiserSettings() {
-        saveBeauty.addListener(this::save);
-
-        renderAlbedo.addListener(this::save);
-        albedoSpp.addListener(this::save);
-        saveAlbedo.addListener(this::save);
-
-        renderNormal.addListener(this::save);
-        normalSpp.addListener(this::save);
-        saveNormal.addListener(this::save);
-        normalWaterDisplacement.addListener(this::save);
+    static boolean isWaterDisplacementEnabled(Scene scene) {
+        return scene.getAdditionalData("denoiser").asObject()
+                .get("normalWaterDisplacement").asBoolean(true);
     }
 
-    private <T> void save(T newValue) {
-        Scene scene = this.scene;
+    public DenoiserSettings() {
+        saveBeauty.addListener((newValue) -> {
+            if (this.changeCallback != null) {
+                this.changeCallback.run();
+            }
+        });
+
+        renderAlbedo.addListener((newValue) -> {
+            if (this.changeCallback != null) {
+                this.changeCallback.run();
+            }
+        });
+        albedoSpp.addListener((newValue) -> {
+            if (this.changeCallback != null) {
+                this.changeCallback.run();
+            }
+        });
+        saveAlbedo.addListener((newValue) -> {
+            if (this.changeCallback != null) {
+                this.changeCallback.run();
+            }
+        });
+
+        renderNormal.addListener((newValue) -> {
+            if (this.changeCallback != null) {
+                this.changeCallback.run();
+            }
+        });
+        normalSpp.addListener((newValue) -> {
+            if (this.changeCallback != null) {
+                this.changeCallback.run();
+            }
+        });
+        saveNormal.addListener((newValue) -> {
+            if (this.changeCallback != null) {
+                this.changeCallback.run();
+            }
+        });
+        normalWaterDisplacement.addListener((newValue) -> {
+            if (this.changeCallback != null) {
+                this.changeCallback.run();
+            }
+        });
+    }
+
+    public void saveToScene(Scene scene) {
         if (scene != null) {
             JsonObject denoiserSettings = new JsonObject();
             denoiserSettings.set("saveBeauty", Json.of(saveBeauty.get()));
@@ -48,9 +83,7 @@ public class DenoiserSettings {
         }
     }
 
-    public void setScene(Scene scene) {
-        this.scene = scene;
-
+    public void loadFromScene(Scene scene) {
         JsonObject denoiserData = scene != null ?
                 scene.getAdditionalData("denoiser").asObject() :
                 new JsonObject();
@@ -77,5 +110,9 @@ public class DenoiserSettings {
         normalSpp.update();
         saveNormal.update();
         normalWaterDisplacement.update();
+    }
+
+    public void setChangeListener(Runnable callback) {
+        this.changeCallback = callback;
     }
 }
