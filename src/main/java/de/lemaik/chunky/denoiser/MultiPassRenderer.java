@@ -10,20 +10,26 @@ public abstract class MultiPassRenderer extends TileBasedRenderer {
     protected void renderPass(DefaultRenderManager manager, int passSpp, RayTracer[] tracers, float[][] renderBuffers, boolean[] tracerMask) throws InterruptedException {
         Scene scene = manager.bufferedScene;
         double[] sampleBuffer = scene.getSampleBuffer();
-        int width = scene.width;
-        int height = scene.height;
+        int width = scene.canvasConfig.getWidth();
+
+        int fullWidth = scene.canvasConfig.getCropWidth();
+        int fullHeight = scene.canvasConfig.getCropHeight();
+        int cropX = scene.canvasConfig.getCropX();
+        int cropY = scene.canvasConfig.getCropY();
 
         Camera cam = scene.camera();
-        double halfWidth = width / (2.0 * height);
-        double invHeight = 1.0 / height;
+        double halfWidth = fullWidth / (2.0 * fullHeight);
+        double invHeight = 1.0 / fullHeight;
 
         int spp = scene.spp;
         double passinv = 1.0 / passSpp;
         double sinv = 1.0 / (passSpp + spp);
 
         submitTiles(manager, (state, pixel) -> {
-            int x = pixel.firstInt();
-            int y = pixel.secondInt();
+            int sx = pixel.firstInt();
+            int sy = pixel.secondInt();
+            int x = sx + cropX;
+            int y = sy + cropY;
 
             double[] srgb = new double[tracers.length * 3];
 
@@ -45,7 +51,7 @@ public abstract class MultiPassRenderer extends TileBasedRenderer {
                 }
             }
 
-            int offset = 3 * (y*width + x);
+            int offset = 3 * (sy*width + sx);
             for (int i = 0; i < tracers.length; i++) {
                 if (tracerMask[i]) {
                     float[] buffer = renderBuffers[i];

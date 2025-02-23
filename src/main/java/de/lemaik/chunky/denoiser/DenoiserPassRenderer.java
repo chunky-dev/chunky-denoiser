@@ -88,19 +88,19 @@ public class DenoiserPassRenderer extends MultiPassRenderer {
             scene.saveFrame(out, PortableFloatMap.getPfmExportFormat(), TaskTracker.NONE);
         }
 
-        if (!aborted && settings.saveAlbedo.get()) {
+        if (!aborted && settings.saveAlbedo.get() && buffers[0] != null) {
             File out = manager.context.getSceneFile(scene.name + ".albedo.pfm");
             try (OutputStream os = new BufferedOutputStream(Files.newOutputStream(out.toPath()))) {
-                PortableFloatMap.writeImage(buffers[0], scene.width, scene.height, ByteOrder.LITTLE_ENDIAN, os);
+                PortableFloatMap.writeImage(buffers[0], scene.canvasConfig.getWidth(), scene.canvasConfig.getHeight(), ByteOrder.LITTLE_ENDIAN, os);
             } catch (IOException e) {
                 Log.error("Failed to save albedo pass", e);
             }
         }
 
-        if (!aborted && settings.saveNormal.get()) {
+        if (!aborted && settings.saveNormal.get() && buffers[1] != null) {
             File out = manager.context.getSceneFile(scene.name + ".normal.pfm");
             try (OutputStream os = new BufferedOutputStream(Files.newOutputStream(out.toPath()))) {
-                PortableFloatMap.writeImage(buffers[1], scene.width, scene.height, ByteOrder.LITTLE_ENDIAN, os);
+                PortableFloatMap.writeImage(buffers[1], scene.canvasConfig.getWidth(), scene.canvasConfig.getHeight(), ByteOrder.LITTLE_ENDIAN, os);
             } catch (IOException e) {
                 Log.error("Failed to save normal pass", e);
             }
@@ -111,7 +111,7 @@ public class DenoiserPassRenderer extends MultiPassRenderer {
                 ((OidnBinaryDenoiser) denoiser).loadPath();
 
             try {
-                denoiser.denoiseDouble(scene.width, scene.height, sampleBuffer,
+                denoiser.denoiseDouble(scene.canvasConfig.getWidth(), scene.canvasConfig.getHeight(), sampleBuffer,
                         buffers[0], buffers[1], sampleBuffer);
 
                 scene.spp = scene.getTargetSpp();
