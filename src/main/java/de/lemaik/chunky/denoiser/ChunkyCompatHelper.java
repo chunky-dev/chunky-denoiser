@@ -65,7 +65,7 @@ public class ChunkyCompatHelper {
 
         private static Method doWaterDisplacementImpl = getMethod(water, "doWaterDisplacement", Ray.class);
 
-        public static void doWaterDisplacement(Ray ray) {
+        public static void doWaterDisplacement(se.llbit.chunky.renderer.scene.Scene scene, Ray ray) {
             try {
                 doWaterDisplacementImpl.invoke(null, ray);
             } catch (IllegalAccessException | InvocationTargetException e) {
@@ -149,6 +149,14 @@ public class ChunkyCompatHelper {
                 }
             }
             return scene.canvasConfig.getHeight();
+        }
+
+        public static void doWaterShading(se.llbit.chunky.renderer.scene.Scene scene, Ray ray) {
+            try {
+                scene.getCurrentWaterShader().doWaterShading(ray, scene.getAnimationTime());
+            } catch (NoSuchMethodError e) {
+                Water.doWaterDisplacement(scene, ray);
+            }
         }
     }
 }

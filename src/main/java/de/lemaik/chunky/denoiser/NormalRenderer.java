@@ -31,7 +31,7 @@ public class NormalRenderer extends PathTracingRenderer {
       if (PreviewRayTracer.nextIntersection(scene, ray)) {
         if (BetterRenderManager.NORMAL_WATER_DISPLACEMENT && !ChunkyCompatHelper.Scene.isStillWaterEnabled(scene)
             && ray.getCurrentMaterial().isWater()) {
-          ChunkyCompatHelper.Water.doWaterDisplacement(ray);
+          ChunkyCompatHelper.Scene.doWaterShading(scene, ray);
         }
 
         if (MAP_POSITIVE) {
