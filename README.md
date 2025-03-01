@@ -1,6 +1,8 @@
-z# Denoising Plugin
+# Denoising Plugin
 
-**Note: This README is for an development version of the plugin that is not yet released (for Chunky 2.5). Click [here](https://github.com/chunky-dev/chunky-denoiser/blob/4d4db51a4a81f77c24cc1def717686c9df67a95d/README.md) for the README for the current stable version of the plugin, which is 0.4.0 (for Chunky 2.4).**
+> [!IMPORTANT]
+> This is the development version of the plugin that is still in pre-release stage and only compatible with Chunky 2.5.0 snapshots.  
+> Click [here](https://github.com/chunky-dev/chunky-denoiser/tree/v0.4.x?tab=readme-ov-file#denoising-plugin) for the README of the current stable version of the plugin, which is 0.4.x (supporting both Chunky 2.4.x and 2.5.0 snapshots).
 
 This is a plugin for [Chunky][chunky] that creates _Portable Float Map_ files (.pfm) for use with denoisers, e.g. [Intel Open Image Denoise][openimagedenoise].
 
@@ -50,8 +52,8 @@ Navigate to `src/main/java/de/lemaik/chunky/denoiser/DenoiserPlugin` and click t
 
 To build the plugin externally, run the `gradlew` script in the project root directory. Gradle is setup with a few main tasks:
 
-* `gradlew pluginJar` - Build the denoiser plugin Jar
-* `gradlew clean` - Cleans the project. Removes old builds.
+- `gradlew pluginJar` - Build the denoiser plugin Jar
+- `gradlew clean` - Cleans the project. Removes old builds.
 
 # License
 
